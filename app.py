@@ -169,6 +169,59 @@ def create_html(places, title):
         places_json=json.dumps(top_10)
     )
 
+def create_poster_html(place_type, area):
+    html_template = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Poster</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: white;
+            }}
+            .poster-container {{
+                width: 600px;
+                height: 800px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }}
+            .title {{
+                font-size: 48px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #1F2937;
+            }}
+            .subtitle {{
+                font-size: 24px;
+                font-style: italic;
+                color: #6B7280;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="poster-container">
+            <h1 class="title">{place_type} terbaik<br>di {area}</h1>
+            <p class="subtitle">Menurut google reviews</p>
+        </div>
+    </body>
+    </html>
+    '''
+    return html_template.format(place_type=place_type, area=area)
+
 def create_poster_image(place_type, area):
     html_content = create_poster_html(place_type, area)
     
