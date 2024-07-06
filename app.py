@@ -67,11 +67,11 @@ def create_html(places, title):
             h1 {{
                 text-align: center;
                 color: #1F2937;
-                margin-bottom: 30px;
+                margin-bottom: 20px;
             }}
             .place {{
                 border-bottom: 1px solid #E5E7EB;
-                padding: 15px 0;
+                padding: 10px 0;
             }}
             .place:last-child {{
                 border-bottom: none;
@@ -103,7 +103,7 @@ def create_html(places, title):
                 text-align: center;
                 color: #6B7280;
                 font-size: 0.8em;
-                margin-top: 20px;
+                margin-top: 10px;
             }}
         </style>
     </head>
