@@ -170,36 +170,23 @@ def create_html(places, title):
     )
 
 def create_poster_image(place_type, area):
-    width, height = 600, 800
-    image = Image.new('RGB', (width, height), color='white')
-    draw = ImageDraw.Draw(image)
+    html_content = create_poster_html(place_type, area)
     
-    try:
-        font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 36)
-        font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Italic.ttf", 18)
-    except IOError:
-        font_large = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-
-    title = f"{place_type} terbaik di {area}"
-    subtitle = "Menurut google reviews"
-
-    # Calculate text positions using textbbox
-    title_bbox = draw.textbbox((0, 0), title, font=font_large)
-    title_width = title_bbox[2] - title_bbox[0]
-    title_height = title_bbox[3] - title_bbox[1]
-
-    subtitle_bbox = draw.textbbox((0, 0), subtitle, font=font_small)
-    subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
-    subtitle_height = subtitle_bbox[3] - subtitle_bbox[1]
-
-    title_position = ((width - title_width) // 2, (height - title_height - subtitle_height) // 2)
-    subtitle_position = ((width - subtitle_width) // 2, title_position[1] + title_height + 20)
-
-    # Draw text
-    draw.text(title_position, title, font=font_large, fill='black')
-    draw.text(subtitle_position, subtitle, font=font_small, fill='black')
-
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 600, 'height': 800})
+        page.set_content(html_content)
+        
+        # Wait for any animations or fonts to load
+        page.wait_for_timeout(1000)
+        
+        # Capture the screenshot
+        screenshot = page.screenshot()
+        browser.close()
+    
+    # Convert the screenshot to a PIL Image
+    image = Image.open(io.BytesIO(screenshot))
+    
     return image
 
 def html_to_image(html_content):
