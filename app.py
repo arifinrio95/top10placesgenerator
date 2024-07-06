@@ -66,10 +66,13 @@ def create_html(places, title):
             }}
             .container {{
                 width: 100%;
-                margin: 0 auto;
-                position: relative;
+                height: 100%;
                 padding: 20px;
                 box-sizing: border-box;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
             }}
             h1 {{
                 text-align: center;
