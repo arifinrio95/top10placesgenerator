@@ -213,7 +213,7 @@ def html_to_image(html_content):
             page.set_content(html_content)
             
             # Set initial viewport size
-            page.set_viewport_size({"width": target_width, "height": 3000})  # Set a large initial height
+            page.set_viewport_size({"width": target_width, "height": target_height})
             
             # Evaluate content dimensions
             content_dimensions = page.evaluate("""() => {
@@ -228,34 +228,36 @@ def html_to_image(html_content):
             if content_dimensions['width'] == 0 or content_dimensions['height'] == 0:
                 raise ValueError("Could not determine content dimensions")
 
-            # Calculate scaling factor to fit width
-            scale = target_width / content_dimensions['width']
+            # Calculate scaling factor to fit height
+            scale = target_height / content_dimensions['height']
             
-            # Calculate the scaled height of the content
-            scaled_content_height = content_dimensions['height'] * scale
+            # Calculate the scaled width of the content
+            scaled_content_width = content_dimensions['width'] * scale
             
-            # Calculate padding to distribute evenly if content is shorter than target height
-            total_padding = max(0, target_height - scaled_content_height)
-            top_padding = bottom_padding = total_padding / 2
+            # Calculate horizontal padding if needed
+            horizontal_padding = max(0, (target_width - scaled_content_width) / 2)
             
             # Set the container style
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
-                    container.style.width = '{target_width}px';
+                    container.style.width = '{scaled_content_width}px';
                     container.style.height = '{target_height}px';
-                    container.style.backgroundColor = 'white';
-                    container.style.paddingTop = '{top_padding}px';
-                    container.style.paddingBottom = '{bottom_padding}px';
+                    container.style.margin = '0 auto';
+                    container.style.paddingLeft = '{horizontal_padding}px';
+                    container.style.paddingRight = '{horizontal_padding}px';
                     container.style.boxSizing = 'border-box';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
                     container.style.alignItems = 'center';
-                    container.style.justifyContent = 'center';
+                    container.style.justifyContent = 'flex-start';
+                    container.style.backgroundColor = 'white';
                 }}
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
                 document.body.style.backgroundColor = 'white';
+                document.body.style.width = '{target_width}px';
+                document.body.style.height = '{target_height}px';
             }}""")
             
             # Take the screenshot of the entire page
