@@ -10,3 +10,4 @@ libgbm1
 libpango1.0-0
 libasound2
 libpangocairo-1.0-0
+chromium
