@@ -4,8 +4,6 @@ import io
 import json
 import base64
 from PIL import Image, ImageDraw, ImageFont
-import numpy as np
-from htmlwebshot import WebShot
 
 def parse_text(text):
     places = []
@@ -178,11 +176,6 @@ def create_poster_image(place_type, area):
 
     return image
 
-def html_to_image(html_content):
-    shot = WebShot()
-    img_bytes = shot.create_pic(html=html_content, size=(800, 0))
-    return Image.open(io.BytesIO(img_bytes))
-
 def main():
     st.title("Top 10 Places Generator")
 
@@ -205,31 +198,20 @@ def main():
             places = parse_text(text_input)
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
-            # Convert HTML to image
-            main_image = html_to_image(html_output)
+            # Display HTML content
+            st.components.v1.html(html_output, height=600, scrolling=True)
+            st.markdown("### Top 10 Places")
+            st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
-            # Create poster image
+            # Create and display poster image
             poster_image = create_poster_image(place_type, area)
-
-            # Display images
-            st.image(main_image, caption="Top 10 Places", use_column_width=True)
             st.image(poster_image, caption="Poster", use_column_width=True)
 
-            # Provide download links for images
-            buffered_main = io.BytesIO()
-            main_image.save(buffered_main, format="PNG")
-            main_image_bytes = buffered_main.getvalue()
-
+            # Provide download link for poster image
             buffered_poster = io.BytesIO()
             poster_image.save(buffered_poster, format="PNG")
             poster_image_bytes = buffered_poster.getvalue()
 
-            st.download_button(
-                label="Download Top 10 Image",
-                data=main_image_bytes,
-                file_name=f"top_10_{place_type}_{area}.png",
-                mime="image/png"
-            )
             st.download_button(
                 label="Download Poster Image",
                 data=poster_image_bytes,
