@@ -334,6 +334,48 @@ def create_poster_image(place_type, area):
     
     return image
 
+# def html_to_image(html_content):
+#     with sync_playwright() as p:
+#         browser = p.chromium.launch()
+#         page = browser.new_page(viewport={'width': 600, 'height': 800})
+#         page.set_content(html_content)
+        
+#         # Wait for any animations or lazy-loaded content to finish
+#         page.wait_for_timeout(1000)
+        
+#         # Get the bounding box of the content
+#         bounding_box = page.evaluate('''() => {
+#             const body = document.body;
+#             const html = document.documentElement;
+#             const height = Math.max(
+#                 body.scrollHeight, body.offsetHeight,
+#                 html.clientHeight, html.scrollHeight, html.offsetHeight
+#             );
+#             return {
+#                 width: document.documentElement.clientWidth,
+#                 height: height
+#             };
+#         }''')
+        
+#         # Calculate the aspect ratio
+#         aspect_ratio = 800 / 600
+#         content_ratio = bounding_box['height'] / bounding_box['width']
+        
+#         if content_ratio > aspect_ratio:
+#             # Content is taller, adjust width
+#             new_width = math.ceil(bounding_box['height'] / aspect_ratio)
+#             page.set_viewport_size({'width': new_width, 'height': bounding_box['height']})
+#         else:
+#             # Content is wider, adjust height
+#             new_height = math.ceil(bounding_box['width'] * aspect_ratio)
+#             page.set_viewport_size({'width': bounding_box['width'], 'height': new_height})
+        
+#         # Capture the screenshot
+#         screenshot = page.screenshot(full_page=True)
+#         browser.close()
+        
+#         return screenshot, bounding_box['height']
+
 def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -343,53 +385,11 @@ def html_to_image(html_content):
         # Wait for any animations or lazy-loaded content to finish
         page.wait_for_timeout(1000)
         
-        # Get the bounding box of the content
-        bounding_box = page.evaluate('''() => {
-            const body = document.body;
-            const html = document.documentElement;
-            const height = Math.max(
-                body.scrollHeight, body.offsetHeight,
-                html.clientHeight, html.scrollHeight, html.offsetHeight
-            );
-            return {
-                width: document.documentElement.clientWidth,
-                height: height
-            };
-        }''')
-        
-        # Calculate the aspect ratio
-        aspect_ratio = 800 / 600
-        content_ratio = bounding_box['height'] / bounding_box['width']
-        
-        if content_ratio > aspect_ratio:
-            # Content is taller, adjust width
-            new_width = math.ceil(bounding_box['height'] / aspect_ratio)
-            page.set_viewport_size({'width': new_width, 'height': bounding_box['height']})
-        else:
-            # Content is wider, adjust height
-            new_height = math.ceil(bounding_box['width'] * aspect_ratio)
-            page.set_viewport_size({'width': bounding_box['width'], 'height': new_height})
-        
         # Capture the screenshot
         screenshot = page.screenshot(full_page=True)
         browser.close()
         
-        return screenshot, bounding_box['height']
-
-# def html_to_image(html_content):
-#     with sync_playwright() as p:
-#         browser = p.chromium.launch()
-#         page = browser.new_page(viewport={'width': 1200, 'height': 1600})
-#         page.set_content(html_content)
-        
-#         # Wait for any animations or lazy-loaded content to finish
-#         page.wait_for_timeout(1000)
-        
-#         # Capture the screenshot
-#         screenshot = page.screenshot(full_page=True)
-#         browser.close()
-        
-#         return screenshot
+        return screenshot
         
 def main():
     install_chromium()
