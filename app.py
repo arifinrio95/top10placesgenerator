@@ -169,10 +169,16 @@ def html_to_image(html_content):
 
 def main():
     st.title("Top 10 Places Generator")
+    st.header("Cara Kerja:")
+    st.write("""1. Cari tempat yang ingin kamu extract top 10-nya di google maps.
+    2. Misal, search "Bakso di Kota Bandung"
+    3. Copy semua hasilnya dengan block semua text dari tempat pertama sampai selesai.
+    4. Paste di kolom Place Data dibawah.
+    """)
 
     area = st.text_input("Enter the area name:")
     place_type = st.text_input("Enter the type of place:")
-    text_input = st.text_area("Enter the place data (can be very long):", height=300)
+    text_input = st.text_area("Enter the place data:", height=300)
 
     if st.button("Generate Image"):
         if area and place_type and text_input:
