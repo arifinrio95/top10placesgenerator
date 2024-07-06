@@ -203,8 +203,8 @@ def create_poster_image(place_type, area):
     return image
 
 def html_to_image(html_content):
-    target_width = 600
-    target_height = 800  # 3:4 ratio
+    target_width = 1200
+    target_height = 1600  # 3:4 ratio
 
     try:
         with sync_playwright() as p:
@@ -228,11 +228,12 @@ def html_to_image(html_content):
             if content_dimensions['width'] == 0 or content_dimensions['height'] == 0:
                 raise ValueError("Could not determine content dimensions")
 
-            # Calculate scaling factor to fit height
-            scale = min(1, target_height / content_dimensions['height'])
+            # Calculate scaling factor to fit height and width
+            scale = min(target_width / content_dimensions['width'], target_height / content_dimensions['height'])
             
-            # Calculate padding to center content horizontally
+            # Calculate padding to center content
             padding_x = max(0, (target_width - content_dimensions['width'] * scale) / 2)
+            padding_y = max(0, (target_height - content_dimensions['height'] * scale) / 2)
 
             # Set the container style to ensure all content is visible and centered
             page.evaluate(f"""() => {{
@@ -241,7 +242,7 @@ def html_to_image(html_content):
                     container.style.transform = 'scale({scale})';
                     container.style.transformOrigin = 'top center';
                     container.style.margin = '0 auto';
-                    container.style.padding = '20px {padding_x}px';
+                    container.style.padding = '{padding_y}px {padding_x}px';
                     container.style.boxSizing = 'border-box';
                     container.style.backgroundColor = 'white';
                 }}
@@ -250,7 +251,7 @@ def html_to_image(html_content):
                 document.body.style.padding = '0';
                 document.body.style.display = 'flex';
                 document.body.style.justifyContent = 'center';
-                document.body.style.alignItems = 'flex-start';
+                document.body.style.alignItems = 'center';
                 document.body.style.minHeight = '100vh';
             }}""")
             
