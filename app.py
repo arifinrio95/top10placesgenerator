@@ -157,9 +157,9 @@ def main():
     7. Tunggu hasilnya akan berupa image yang siap kamu download.
     """)
 
-    area = st.text_input("Enter the area name:")
-    place_type = st.text_input("Enter the type of place:")
-    text_input = st.text_area("Enter the place data:", height=300)
+    area = st.text_input("Enter the area name (untuk judul posternya nanti):")
+    place_type = st.text_input("Enter the type of place (untuk judul juga):")
+    text_input = st.text_area("Enter the place data (untuk diparsing dan dibuatkan poster):", height=300)
 
     if st.button("Generate Image"):
         if area and place_type and text_input:
