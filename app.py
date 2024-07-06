@@ -7,7 +7,99 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 from playwright.sync_api import sync_playwright
 import math
+import zipfile
+import json
 
+def create_scatter_plot_html(places, title):
+    # Calculate dynamic scales
+    min_reviews = min(place['reviews'] for place in places)
+    max_reviews = max(place['reviews'] for place in places)
+    min_rating = min(place['rating'] for place in places)
+    max_rating = max(place['rating'] for place in places)
+
+    # Add some padding to the scales
+    reviews_padding = (max_reviews - min_reviews) * 0.1
+    rating_padding = (max_rating - min_rating) * 0.1
+
+    x_min = max(0, min_reviews - reviews_padding)
+    x_max = max_reviews + reviews_padding
+    y_min = max(0, min_rating - rating_padding)
+    y_max = min(5, max_rating + rating_padding)
+
+    html_template = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{title}</title>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: white;
+            }}
+            #chart {{
+                width: 800px;
+                height: 600px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div id="chart"></div>
+        <script>
+            var data = [{data}];
+            var layout = {{
+                title: {{
+                    text: '{title}',
+                    font: {{ size: 24 }}
+                }},
+                xaxis: {{
+                    title: 'Number of Reviews',
+                    range: [{x_min}, {x_max}]
+                }},
+                yaxis: {{
+                    title: 'Rating',
+                    range: [{y_min}, {y_max}]
+                }},
+                hovermode: 'closest',
+                showlegend: false,
+                margin: {{ t: 50, r: 50, b: 50, l: 50 }}
+            }};
+            Plotly.newPlot('chart', data, layout, {{responsive: true}});
+        </script>
+    </body>
+    </html>
+    '''
+
+    scatter_data = []
+    for place in places:
+        scatter_data.append({
+            'x': [place['reviews']],
+            'y': [place['rating']],
+            'mode': 'markers+text',
+            'type': 'scatter',
+            'text': [f"{place['name']}<br>{place['rating']} ★<br>{place['reviews']} reviews"],
+            'textposition': 'top center',
+            'marker': { 'size': 10 },
+            'textfont': { 'size': 10 }
+        })
+
+    return html_template.format(
+        title=title,
+        data=json.dumps(scatter_data),
+        x_min=x_min,
+        x_max=x_max,
+        y_min=y_min,
+        y_max=y_max
+    )
+    
 def install_chromium():
     try:
         result = subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], 
@@ -315,38 +407,40 @@ def main():
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
             st.markdown("### Top 10 Places")
-            st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
-            
-            # Provide download link for poster image
-            buffered_poster = io.BytesIO()
-            poster_image.save(buffered_poster, format="PNG")
-            poster_image_bytes = buffered_poster.getvalue()
+            st.info("The image above shows the top 10 places.")
 
-            st.download_button(
-                label="Download Poster Image",
-                data=poster_image_bytes,
-                file_name=f"poster_{place_type}_{area}.png",
-                mime="image/png"
-            )
+            # Create scatter plot
+            scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
+            scatter_image = html_to_image(scatter_html)
+            st.image(scatter_image, caption="Scatter Plot", use_column_width=True)
 
-            # Convert HTML to image and provide download link
+            # Convert HTML to image
             with st.spinner("Generating Top 10 image..."):
                 try:
-                    html_image, image_height = html_to_image(html_output)
+                    html_image = html_to_image(html_output)
                     
-                    if html_image is not None and image_height is not None:
-                        st.download_button(
-                            label="Download Top 10 as Image",
-                            data=html_image,
-                            file_name=f"top_10_{place_type}_{area}.png",
-                            mime="image/png"
-                        )
-                        st.success(f"Top 10 image generated successfully! Image size: 1200x1600 pixels")
+                    if html_image is not None:
+                        st.success(f"Top 10 image generated successfully!")
                     else:
                         st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
                 except Exception as e:
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
+
+            # Create a zip file containing all images
+            with io.BytesIO() as zip_buffer:
+                with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, False) as zip_file:
+                    zip_file.writestr("poster.png", poster_image.getvalue())
+                    zip_file.writestr("top_10.png", html_image)
+                    zip_file.writestr("scatter_plot.png", scatter_image)
+                
+                zip_buffer.seek(0)
+                st.download_button(
+                    label="Download All Images",
+                    data=zip_buffer.getvalue(),
+                    file_name=f"top_10_{place_type}_{area}_images.zip",
+                    mime="application/zip"
+                )
         else:
             st.error("Please fill in all fields before generating the images.")
 
