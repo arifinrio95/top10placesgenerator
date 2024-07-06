@@ -63,7 +63,7 @@ def create_html(places, title):
             }}
             .container {{
                 width: 100%;
-                max-width: 600px;
+                max-width: 1200px;
                 margin: 0 auto;
                 padding: 20px;
                 box-sizing: border-box;
