@@ -163,12 +163,19 @@ def create_poster_image(place_type, area):
     title = f"{place_type} terbaik di {area}"
     subtitle = "Menurut google reviews"
 
-    title_width, title_height = draw.textsize(title, font=font_large)
-    subtitle_width, subtitle_height = draw.textsize(subtitle, font=font_small)
+    # Calculate text positions using textbbox
+    title_bbox = draw.textbbox((0, 0), title, font=font_large)
+    title_width = title_bbox[2] - title_bbox[0]
+    title_height = title_bbox[3] - title_bbox[1]
+
+    subtitle_bbox = draw.textbbox((0, 0), subtitle, font=font_small)
+    subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
+    subtitle_height = subtitle_bbox[3] - subtitle_bbox[1]
 
     title_position = ((width - title_width) // 2, (height - title_height - subtitle_height) // 2)
     subtitle_position = ((width - subtitle_width) // 2, title_position[1] + title_height + 20)
 
+    # Draw text
     draw.text(title_position, title, font=font_large, fill='black')
     draw.text(subtitle_position, subtitle, font=font_small, fill='black')
 
@@ -196,13 +203,16 @@ def main():
             places = parse_text(text_input)
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
+            # Display HTML content
             st.components.v1.html(html_output, height=600, scrolling=True)
             st.markdown("### Top 10 Places")
             st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
+            # Create and display poster image
             poster_image = create_poster_image(place_type, area)
             st.image(poster_image, caption="Poster", use_column_width=True)
 
+            # Provide download link for poster image
             buffered_poster = io.BytesIO()
             poster_image.save(buffered_poster, format="PNG")
             poster_image_bytes = buffered_poster.getvalue()
