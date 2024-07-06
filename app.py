@@ -78,16 +78,16 @@ def create_scatter_plot_html(places, title):
     </html>
     '''
 
-    scatter_data = {{
+    scatter_data = {
         'x': [place['reviews'] for place in places],
         'y': [place['rating'] for place in places],
         'mode': 'markers+text',
         'type': 'scatter',
-        'text': [f"{{place['name']}}<br>{{place['rating']}} ★<br>{{place['reviews']}} reviews" for place in places],
+        'text': [f"{place['name']}<br>{place['rating']} ★<br>{place['reviews']} reviews" for place in places],
         'textposition': 'top center',
-        'marker': {{ 'size': 10 }},
-        'textfont': {{ 'size': 10 }}
-    }}
+        'marker': { 'size': 10 },
+        'textfont': { 'size': 10 }
+    }
 
     return html_template.format(
         title=title,
