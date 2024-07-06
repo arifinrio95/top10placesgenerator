@@ -404,7 +404,7 @@ def html_to_image(html_content):
         
         return screenshot
 
-def create_final_poster_html(place_type, area):
+def create_final_poster_html():
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
