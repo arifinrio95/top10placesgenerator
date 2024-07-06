@@ -234,23 +234,24 @@ def html_to_image(html_content):
             # Calculate the scaled height of the content
             scaled_content_height = content_dimensions['height'] * scale
             
-            # Add some padding to the content height (e.g., 10% of target height)
-            padding = int(target_height * 0.1)
-            final_height = min(max(scaled_content_height + padding, target_height), target_height)
+            # Calculate padding to distribute evenly if content is shorter than target height
+            total_padding = max(0, target_height - scaled_content_height)
+            top_padding = bottom_padding = total_padding / 2
             
             # Set the container style
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
                     container.style.width = '{target_width}px';
-                    container.style.height = '{final_height}px';
+                    container.style.height = '{target_height}px';
                     container.style.backgroundColor = 'white';
-                    container.style.padding = '20px';
+                    container.style.paddingTop = '{top_padding}px';
+                    container.style.paddingBottom = '{bottom_padding}px';
                     container.style.boxSizing = 'border-box';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
                     container.style.alignItems = 'center';
-                    container.style.justifyContent = 'flex-start';
+                    container.style.justifyContent = 'center';
                 }}
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
@@ -258,21 +259,15 @@ def html_to_image(html_content):
             }}""")
             
             # Take the screenshot of the entire page
-            screenshot = page.screenshot(full_page=False, clip={"x": 0, "y": 0, "width": target_width, "height": final_height})
+            screenshot = page.screenshot(full_page=False, clip={"x": 0, "y": 0, "width": target_width, "height": target_height})
             browser.close()
             
-            # Process the image
+            # Convert the screenshot to an image
             img = Image.open(io.BytesIO(screenshot))
-            
-            # Create a new white image with the target dimensions
-            new_img = Image.new('RGB', (target_width, target_height), color='white')
-            
-            # Paste the screenshot onto the new image
-            new_img.paste(img, (0, 0))
             
             # Convert the image back to bytes
             img_byte_arr = io.BytesIO()
-            new_img.save(img_byte_arr, format='PNG')
+            img.save(img_byte_arr, format='PNG')
             img_byte_arr = img_byte_arr.getvalue()
             
             return img_byte_arr, target_height
