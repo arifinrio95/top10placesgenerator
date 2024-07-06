@@ -51,6 +51,7 @@ def create_html(places, title):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{title}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <style>
             body {{
                 font-family: Arial, sans-serif;
@@ -139,7 +140,7 @@ def create_html(places, title):
                 placesList.innerHTML += `
                     <div class="place">
                         <div class="place-name">${{index + 1}}. ${{place.name}}</div>
-                        <div class="address">📍 ${{place.address}}</div>
+                        <div class="address"><i class="fas fa-map-marker-alt"></i> ${{place.address}}</div>
                         <div class="rating">
                             <div class="stars">
                                 ${{createStarRating(place.rating, index)}}
