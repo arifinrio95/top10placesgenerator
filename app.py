@@ -11,6 +11,9 @@ import zipfile
 import json
 
 def create_scatter_plot_html(places, title):
+    if not places:
+        return "<p>No data available for scatter plot</p>"
+
     # Calculate dynamic scales
     min_reviews = min(place['reviews'] for place in places)
     max_reviews = max(place['reviews'] for place in places)
@@ -25,7 +28,7 @@ def create_scatter_plot_html(places, title):
     x_max = max_reviews + reviews_padding
     y_min = max(0, min_rating - rating_padding)
     y_max = min(5, max_rating + rating_padding)
-
+    
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -88,6 +91,15 @@ def create_scatter_plot_html(places, title):
         'marker': { 'size': 10 },
         'textfont': { 'size': 10 }
     }
+
+    return html_template.format(
+        title=title,
+        data=json.dumps([scatter_data]),
+        x_min=x_min,
+        x_max=x_max,
+        y_min=y_min,
+        y_max=y_max
+    )
 
     return html_template.format(
         title=title,
@@ -411,6 +423,15 @@ def main():
     if st.button("Generate Images"):
         if area and place_type and text_input:
             places = parse_text(text_input)
+            
+            # Log data yang diproses
+            st.write("Processed data:")
+            st.write(places)
+            
+            if not places:
+                st.error("No valid data found. Please check your input.")
+                return
+
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
 
