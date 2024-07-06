@@ -234,21 +234,23 @@ def html_to_image(html_content):
             # Calculate the scaled height of the content
             scaled_content_height = content_dimensions['height'] * scale
             
-            # Determine the final height (either scaled content height or target height, whichever is larger)
-            final_height = max(scaled_content_height, target_height)
+            # Add some padding to the content height (e.g., 10% of target height)
+            padding = int(target_height * 0.1)
+            final_height = min(max(scaled_content_height + padding, target_height), target_height)
             
             # Set the container style
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
                     container.style.width = '{target_width}px';
-                    container.style.minHeight = '{final_height}px';
+                    container.style.height = '{final_height}px';
                     container.style.backgroundColor = 'white';
                     container.style.padding = '20px';
                     container.style.boxSizing = 'border-box';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
                     container.style.alignItems = 'center';
+                    container.style.justifyContent = 'flex-start';
                 }}
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
@@ -256,12 +258,11 @@ def html_to_image(html_content):
             }}""")
             
             # Take the screenshot of the entire page
-            screenshot = page.screenshot(full_page=True)
+            screenshot = page.screenshot(full_page=False, clip={"x": 0, "y": 0, "width": target_width, "height": final_height})
             browser.close()
             
             # Process the image
             img = Image.open(io.BytesIO(screenshot))
-            img_width, img_height = img.size
             
             # Create a new white image with the target dimensions
             new_img = Image.new('RGB', (target_width, target_height), color='white')
