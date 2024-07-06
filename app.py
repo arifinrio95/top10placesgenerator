@@ -2,8 +2,20 @@ import streamlit as st
 import re
 import io
 import json
+import subprocess
+import sys
 from PIL import Image, ImageDraw, ImageFont
 from playwright.sync_api import sync_playwright
+
+def install_chromium():
+    try:
+        result = subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], 
+                                capture_output=True, text=True, check=True)
+        st.write(result.stdout)
+    except subprocess.CalledProcessError as e:
+        st.error("Failed to install Chromium.")
+        st.error(e.stderr)
+        raise
 
 def parse_text(text):
     places = []
@@ -191,6 +203,8 @@ def html_to_image(html_content):
         return image
 
 def main():
+    install_chromium()
+
     st.title("Top 10 Places Generator")
 
     st.header("Cara Kerja:")
