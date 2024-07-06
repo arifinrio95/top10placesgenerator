@@ -56,13 +56,20 @@ def create_html(places, title):
             body {{
                 font-family: Arial, sans-serif;
                 margin: 0;
-                padding: 20px;
+                padding: 0;
+                width: 600px;
+                height: 800px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
             }}
             .container {{
                 width: 100%;
-                max-width: 600px;
                 margin: 0 auto;
                 position: relative;
+                padding: 20px;
+                box-sizing: border-box;
             }}
             h1 {{
                 text-align: center;
