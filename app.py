@@ -63,7 +63,7 @@ def create_html(places, title):
             }}
             .container {{
                 width: 100%;
-                max-width: 1200px;
+                max-width: 600px;
                 margin: 0 auto;
                 padding: 20px;
                 box-sizing: border-box;
@@ -205,7 +205,7 @@ def create_poster_image(place_type, area):
 def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={'width': 1200, 'height': 1600})
+        page = browser.new_page(viewport={'width': 600, 'height': 800})
         page.set_content(html_content)
         
         # Wait for any animations or lazy-loaded content to finish
@@ -226,7 +226,7 @@ def html_to_image(html_content):
         }''')
         
         # Calculate the aspect ratio
-        aspect_ratio = 1600 / 1200
+        aspect_ratio = 800 / 600
         content_ratio = bounding_box['height'] / bounding_box['width']
         
         if content_ratio > aspect_ratio:
