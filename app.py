@@ -217,7 +217,16 @@ def html_to_image(html_content):
         screenshot_bytes = page.locator('.poster-container').screenshot()
         browser.close()
         
-        return screenshot_bytes
+        # Add white margins to maintain 3:4 ratio
+        image = Image.open(io.BytesIO(screenshot_bytes))
+        final_image = Image.new("RGB", (600, 800), "white")
+        image_width, image_height = image.size
+        offset = ((final_image.width - image_width) // 2, (final_image.height - image_height) // 2)
+        final_image.paste(image, offset)
+        
+        output = io.BytesIO()
+        final_image.save(output, format="PNG")
+        return output.getvalue()
 
 def main():
     install_chromium()
