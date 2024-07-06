@@ -308,15 +308,15 @@ def main():
             places = parse_text(text_input)
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
+            # Create and display poster image
+            poster_image = create_poster_image(place_type, area)
+            st.image(poster_image, caption="Poster", use_column_width=True)
+            
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
             st.markdown("### Top 10 Places")
             st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
-            # Create and display poster image
-            poster_image = create_poster_image(place_type, area)
-            st.image(poster_image, caption="Poster", use_column_width=True)
-
             # Provide download link for poster image
             buffered_poster = io.BytesIO()
             poster_image.save(buffered_poster, format="PNG")
