@@ -210,12 +210,54 @@ def html_to_image(html_content):
         page = browser.new_page()
         page.set_content(html_content)
         
-        # Evaluate content height and set the viewport dynamically
+        # Evaluate content height
         content_height = page.evaluate('''() => {
             const posterContainer = document.querySelector('.poster-container');
             return posterContainer.getBoundingClientRect().height;
         }''')
-        page.set_viewport_size({"width": 600, "height": int(content_height)})
+        
+        # Calculate width for 3:4 ratio
+        target_width = 600
+        target_height = int(target_width * 4 / 3)
+        
+        # If content is shorter than target height, adjust target dimensions
+        if content_height < target_height:
+            target_height = int(content_height)
+            target_width = int(target_height * 3 / 4)
+        
+        # Set viewport size
+        page.set_viewport_size({"width": target_width, "height": target_height})
+        
+        # Evaluate if content fits in the viewport
+        is_overflow = page.evaluate(f'''() => {{
+            const container = document.querySelector('.poster-container');
+            return container.scrollHeight > {target_height};
+        }}''')
+        
+        if is_overflow:
+            # If content overflows, adjust font sizes and re-evaluate
+            page.evaluate('''() => {
+                const style = document.createElement('style');
+                style.textContent = `
+                    body { font-size: 14px; }
+                    h1 { font-size: 1.8em; }
+                    .place-name { font-size: 1em; }
+                    .address, .reviews { font-size: 0.8em; }
+                `;
+                document.head.appendChild(style);
+            }''')
+            
+            # Re-evaluate content height after adjusting font sizes
+            content_height = page.evaluate('''() => {
+                const posterContainer = document.querySelector('.poster-container');
+                return posterContainer.getBoundingClientRect().height;
+            }''')
+            
+            # Recalculate dimensions if needed
+            if content_height < target_height:
+                target_height = int(content_height)
+                target_width = int(target_height * 3 / 4)
+                page.set_viewport_size({"width": target_width, "height": target_height})
         
         # Take the screenshot of the specific element
         screenshot_bytes = page.locator('.poster-container').screenshot()
