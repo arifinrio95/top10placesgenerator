@@ -56,18 +56,22 @@ def create_html(places, title):
             body {{
                 font-family: Arial, sans-serif;
                 margin: 0;
-                padding: 20px;
+                padding: 0;
                 box-sizing: border-box;
-                width: 600px;
-                height: auto;
-                overflow: hidden;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #ffffff;
             }}
             .container {{
-                width: 100%;
+                width: 80%;
                 max-width: 600px;
                 margin: 0 auto;
                 padding: 20px;
                 box-sizing: border-box;
+                border: 1px solid #E5E7EB;
+                background-color: #ffffff;
             }}
             h1 {{
                 text-align: center;
@@ -217,16 +221,7 @@ def html_to_image(html_content):
         screenshot_bytes = page.locator('.poster-container').screenshot()
         browser.close()
         
-        # Add white margins to maintain 3:4 ratio
-        image = Image.open(io.BytesIO(screenshot_bytes))
-        final_image = Image.new("RGB", (600, 800), "white")
-        image_width, image_height = image.size
-        offset = ((final_image.width - image_width) // 2, (final_image.height - image_height) // 2)
-        final_image.paste(image, offset)
-        
-        output = io.BytesIO()
-        final_image.save(output, format="PNG")
-        return output.getvalue()
+        return screenshot_bytes
 
 def main():
     install_chromium()
