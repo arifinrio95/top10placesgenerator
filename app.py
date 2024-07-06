@@ -57,19 +57,24 @@ def create_html(places, title):
                 font-family: Arial, sans-serif;
                 margin: 0;
                 padding: 20px;
+                width: 600px;
+                height: 800px;
                 box-sizing: border-box;
             }}
             .container {{
                 width: 100%;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
+                height: 100%;
                 box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                overflow: hidden;
             }}
             h1 {{
                 text-align: center;
                 color: #1F2937;
                 margin-bottom: 20px;
+                font-size: 24px;
             }}
             .place {{
                 border-bottom: 1px solid #E5E7EB;
@@ -79,13 +84,13 @@ def create_html(places, title):
                 border-bottom: none;
             }}
             .place-name {{
-                font-size: 1.2em;
+                font-size: 1em;
                 font-weight: bold;
                 color: #1F2937;
             }}
             .address {{
                 color: #6B7280;
-                font-size: 0.9em;
+                font-size: 0.8em;
                 margin: 5px 0;
             }}
             .rating {{
@@ -98,13 +103,13 @@ def create_html(places, title):
             }}
             .reviews {{
                 color: #6B7280;
-                font-size: 0.9em;
+                font-size: 0.8em;
                 margin-left: 10px;
             }}
             .footer {{
                 text-align: center;
                 color: #6B7280;
-                font-size: 0.8em;
+                font-size: 0.7em;
                 margin-top: 10px;
             }}
         </style>
@@ -124,7 +129,7 @@ def create_html(places, title):
                 for (let i = 0; i < 5; i++) {{
                     const percentage = Math.max(0, Math.min(100, (rating - i) * 100));
                     stars += `
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <linearGradient id="star-${{index}}-${{i}}">
                                     <stop offset="${{percentage}}%" stop-color="#F2C94C" />
@@ -201,15 +206,12 @@ def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        # Set the viewport to a larger size to ensure all content fits
-        page.set_viewport_size({"width": 800, "height": 1600})
+        # Set the viewport to 600x800 to ensure all content fits
+        page.set_viewport_size({"width": 600, "height": 800})
         page.set_content(html_content)
-        # Scale the image down to 600x800 to maintain the 3:4 ratio
-        image = page.screenshot(full_page=True, clip={"x": 0, "y": 0, "width": 800, "height": 1600})
-        image = Image.open(io.BytesIO(image)).resize((600, 800), Image.ANTIALIAS)
-        output = io.BytesIO()
-        image.save(output, format="PNG")
-        return output.getvalue()
+        image = page.screenshot(full_page=True)
+        browser.close()
+        return image
 
 def main():
     install_chromium()
