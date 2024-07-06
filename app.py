@@ -229,23 +229,23 @@ def main():
             # Display HTML content
             st.components.v1.html(html_output, height=600, scrolling=True)
             st.markdown("### Top 10 Places")
-            st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
+            # st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
-            # Create and display poster image
-            poster_image = create_poster_image(place_type, area)
-            st.image(poster_image, caption="Poster", use_column_width=True)
+            # # Create and display poster image
+            # poster_image = create_poster_image(place_type, area)
+            # st.image(poster_image, caption="Poster", use_column_width=True)
 
-            # Provide download link for poster image
-            buffered_poster = io.BytesIO()
-            poster_image.save(buffered_poster, format="PNG")
-            poster_image_bytes = buffered_poster.getvalue()
+            # # Provide download link for poster image
+            # buffered_poster = io.BytesIO()
+            # poster_image.save(buffered_poster, format="PNG")
+            # poster_image_bytes = buffered_poster.getvalue()
 
-            st.download_button(
-                label="Download Poster Image",
-                data=poster_image_bytes,
-                file_name=f"poster_{place_type}_{area}.png",
-                mime="image/png"
-            )
+            # st.download_button(
+            #     label="Download Poster Image",
+            #     data=poster_image_bytes,
+            #     file_name=f"poster_{place_type}_{area}.png",
+            #     mime="image/png"
+            # )
 
             # Convert HTML to image and provide download link
             html_image = html_to_image(html_output)
