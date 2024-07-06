@@ -38,6 +38,7 @@ def create_scatter_plot_html(places, title):
         <title>{title}</title>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
             body {{
                 font-family: 'Inter', sans-serif;
                 margin: 0;
@@ -156,6 +157,7 @@ def create_html(places, title):
         <title>{title}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
             body {{
                 font-family: 'Inter', sans-serif;
                 margin: 0;
@@ -280,6 +282,7 @@ def create_poster_html(place_type, area):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Poster</title>
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
             body {{
                 font-family: 'Inter', sans-serif;
                 margin: 0;
@@ -410,6 +413,7 @@ def create_final_poster_html():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Final Poster</title>
         <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
             body, html {{
                 margin: 0;
                 padding: 0;
