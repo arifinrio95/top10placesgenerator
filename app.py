@@ -39,7 +39,7 @@ def create_scatter_plot_html(places, title):
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
             body {{
-                font-family: Arial, sans-serif;
+                font-family: 'Inter', sans-serif;
                 margin: 0;
                 padding: 0;
                 display: flex;
@@ -157,7 +157,7 @@ def create_html(places, title):
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <style>
             body {{
-                font-family: Arial, sans-serif;
+                font-family: 'Inter', sans-serif;
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
@@ -281,7 +281,7 @@ def create_poster_html(place_type, area):
         <title>Poster</title>
         <style>
             body {{
-                font-family: Arial, sans-serif;
+                font-family: 'Inter', sans-serif;
                 margin: 0;
                 padding: 0;
                 display: flex;
@@ -418,7 +418,7 @@ def create_final_poster_html():
                 justify-content: center;
                 align-items: center;
                 background-color: white;
-                font-family: Arial, sans-serif;
+                font-family: 'Inter', sans-serif;
             }}
             .poster-container {{
                 width: 100%;
