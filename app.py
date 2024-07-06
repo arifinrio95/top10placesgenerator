@@ -249,6 +249,7 @@ def html_to_image(html_content):
     except Exception as e:
         st.error(f"An error occurred while generating the image: {str(e)}")
         return None
+        
 def main():
     install_chromium()
 
@@ -296,12 +297,18 @@ def main():
 
             # Convert HTML to image and provide download link
             html_image = html_to_image(html_output)
-            st.download_button(
-                label="Download Top 10 as Image",
-                data=html_image,
-                file_name=f"top_10_{place_type}_{area}.png",
-                mime="image/png"
-            )
+            if html_image is not None:
+                try:
+                    st.download_button(
+                        label="Download Top 10 as Image",
+                        data=html_image,
+                        file_name=f"top_10_{place_type}_{area}.png",
+                        mime="image/png"
+                    )
+                except Exception as e:
+                    st.error(f"Failed to create download button for Top 10 image: {str(e)}")
+            else:
+                st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
         else:
             st.error("Please fill in all fields before generating the images.")
 
