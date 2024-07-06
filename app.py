@@ -202,47 +202,53 @@ def create_poster_image(place_type, area):
     return image
 
 def html_to_image(html_content):
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
-        page.set_content(html_content)
-        
-        # Set initial viewport size
-        initial_width = 600
-        initial_height = 800  # Increase initial height to avoid cutting off content
-        page.set_viewport_size({"width": initial_width, "height": initial_height})
-        
-        # Evaluate content height
-        content_height = page.evaluate('''() => {
-            const posterContainer = document.querySelector('.poster-container');
-            return posterContainer.getBoundingClientRect().height;
-        }''')
-        
-        # Calculate dimensions for 3:4 ratio
-        target_width = initial_width
-        target_height = int(target_width * 4 / 3)
-        
-        # If content is taller than target height, adjust width to maintain ratio
-        if content_height > target_height:
-            target_width = int(content_height * 3 / 4)
-            target_height = content_height
-        
-        # Set final viewport size
-        page.set_viewport_size({"width": target_width, "height": target_height})
-        
-        # Add padding to ensure all content is visible
-        page.evaluate('''() => {
-            const container = document.querySelector('.poster-container');
-            container.style.padding = '20px';
-            container.style.boxSizing = 'border-box';
-        }''')
-        
-        # Take the screenshot of the specific element
-        screenshot_bytes = page.locator('.poster-container').screenshot()
-        browser.close()
-        
-        return screenshot_bytes
+    max_width = 1200
+    max_height = 1600
 
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            page.set_content(html_content)
+            
+            # Set initial viewport size
+            initial_width = min(600, max_width)
+            initial_height = min(800, max_height)
+            page.set_viewport_size({"width": initial_width, "height": initial_height})
+            
+            # Evaluate content height
+            content_height = page.evaluate('''() => {
+                const posterContainer = document.querySelector('.poster-container');
+                return posterContainer.getBoundingClientRect().height;
+            }''')
+            
+            # Calculate dimensions for 3:4 ratio
+            target_width = initial_width
+            target_height = int(target_width * 4 / 3)
+            
+            # If content is taller than target height, adjust width to maintain ratio
+            if content_height > target_height:
+                target_width = min(int(content_height * 3 / 4), max_width)
+                target_height = min(content_height, max_height)
+            
+            # Set final viewport size
+            page.set_viewport_size({"width": target_width, "height": target_height})
+            
+            # Add padding to ensure all content is visible
+            page.evaluate('''() => {
+                const container = document.querySelector('.poster-container');
+                container.style.padding = '20px';
+                container.style.boxSizing = 'border-box';
+            }''')
+            
+            # Take the screenshot of the specific element
+            screenshot_bytes = page.locator('.poster-container').screenshot()
+            browser.close()
+            
+            return screenshot_bytes
+    except Exception as e:
+        st.error(f"An error occurred while generating the image: {str(e)}")
+        return None
 def main():
     install_chromium()
 
