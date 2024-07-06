@@ -451,7 +451,7 @@ def create_final_poster_html():
     <body>
         <div class="poster-container">
             <h1 class="title">Komen dibawah, spot apa lagi yang harus di-ranking?</h1>
-            <p class="subtitle"> </p>
+            <p class="subtitle">-------------------------</p>
         </div>
     </body>
     </html>
