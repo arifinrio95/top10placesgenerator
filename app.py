@@ -211,14 +211,14 @@ def html_to_image(html_content):
             page = browser.new_page()
             page.set_content(html_content)
             
-            # Set initial viewport size
+            # Set viewport size
             page.set_viewport_size({"width": target_width, "height": target_height})
             
             # Evaluate content height
-            content_height = page.evaluate('''() => {
+            content_height = page.evaluate("""() => {
                 const posterContainer = document.querySelector('.poster-container');
                 return posterContainer ? posterContainer.getBoundingClientRect().height : 0;
-            }''')
+            }""")
             
             if content_height == 0:
                 raise ValueError("Could not determine content height")
@@ -226,27 +226,30 @@ def html_to_image(html_content):
             # If content is taller than target height, adjust the scale
             if content_height > target_height:
                 scale = target_height / content_height
-                page.evaluate(f'''() => {{
+                page.evaluate(f"""() => {{
                     const container = document.querySelector('.poster-container');
                     if (container) {{
                         container.style.transform = 'scale({scale})';
                         container.style.transformOrigin = 'top left';
+                        container.style.width = '{target_width / scale}px';
+                        container.style.height = '{target_height / scale}px';
                     }}
-                }}''')
+                }}""")
 
-            # Add padding to ensure all content is visible
-            page.evaluate('''() => {
+            # Ensure the container fits the viewport
+            page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
-                if (container) {
+                if (container) {{
+                    container.style.width = '{target_width}px';
+                    container.style.height = '{target_height}px';
+                    container.style.overflow = 'hidden';
                     container.style.padding = '20px';
                     container.style.boxSizing = 'border-box';
-                }
-            }''')
+                }}
+            }}""")
             
             # Take the screenshot of the specific element
-            screenshot_bytes = page.locator('.poster-container').screenshot(
-                clip={"x": 0, "y": 0, "width": target_width, "height": target_height}
-            )
+            screenshot_bytes = page.locator('.poster-container').screenshot()
             browser.close()
             
             return screenshot_bytes
