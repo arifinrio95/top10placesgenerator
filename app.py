@@ -323,7 +323,7 @@ def main():
                             file_name=f"top_10_{place_type}_{area}.png",
                             mime="image/png"
                         )
-                        st.success(f"Top 10 image generated successfully! Image size: 600x{image_height} pixels")
+                        st.success(f"Top 10 image generated successfully! Image size: 1200x1600 pixels")
                     else:
                         st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
                 except Exception as e:
