@@ -415,14 +415,14 @@ def main():
             places = parse_text(text_input)
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
-            # Create and display poster image
-            poster_image = create_poster_image(place_type, area)
-            st.image(poster_image, caption="Poster", use_column_width=True)
-            
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
             st.markdown("### Top 10 Places")
             st.info("The image above shows the top 10 places.")
+            
+            # Create and display poster image
+            poster_image = create_poster_image(place_type, area)
+            st.image(poster_image, caption="Poster", use_column_width=True)
 
             # Create scatter plot
             scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
@@ -445,7 +445,12 @@ def main():
             # Create a zip file containing all images
             with io.BytesIO() as zip_buffer:
                 with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, False) as zip_file:
-                    zip_file.writestr("poster.png", poster_image.getvalue())
+                    # Convert PIL Image to bytes
+                    poster_bytes = io.BytesIO()
+                    poster_image.save(poster_bytes, format='PNG')
+                    poster_bytes = poster_bytes.getvalue()
+
+                    zip_file.writestr("poster.png", poster_bytes)
                     zip_file.writestr("top_10.png", html_image)
                     zip_file.writestr("scatter_plot.png", scatter_image)
                 
