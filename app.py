@@ -549,7 +549,7 @@ def main():
         
                     zip_file.writestr("poster.png", poster_bytes)
                     zip_file.writestr("top_10.png", html_image)
-                    zip_file.writestr("scatter_plot.png", scatter_image)
+                    # zip_file.writestr("scatter_plot.png", scatter_image)
                     
                     # Add the new final poster
                     final_poster_image = create_final_poster_image()
