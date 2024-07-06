@@ -532,8 +532,6 @@ def main():
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
 
-            # Display the final poster
-            st.image(final_poster_image, caption="Final Poster", use_column_width=True)
             
             # Create a zip file containing all images
             with io.BytesIO() as zip_buffer:
@@ -561,7 +559,9 @@ def main():
                     file_name=f"top_10_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
-            
+
+            # Display the final poster
+            st.image(final_poster_image, caption="Final Poster", use_column_width=True)
             
 
 if __name__ == "__main__":
