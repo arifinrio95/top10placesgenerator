@@ -400,7 +400,74 @@ def html_to_image(html_content):
         browser.close()
         
         return screenshot
+
+def create_final_poster_html():
+    html_template = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Final Poster</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: white;
+            }}
+            .poster-container {{
+                width: 600px;
+                height: 800px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }}
+            .title {{
+                font-size: 36px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #1F2937;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="poster-container">
+            <h1 class="title">Tempat apa lagi yang mau kamu cek rankingnya?</h1>
+        </div>
+    </body>
+    </html>
+    '''
+    return html_template
+
+def create_final_poster_image():
+    html_content = create_final_poster_html()
+    
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 600, 'height': 800})
+        page.set_content(html_content)
         
+        # Wait for any animations or fonts to load
+        page.wait_for_timeout(1000)
+        
+        # Capture the screenshot
+        screenshot = page.screenshot()
+        browser.close()
+    
+    # Convert the screenshot to a PIL Image
+    image = Image.open(io.BytesIO(screenshot))
+    
+    return image
+    
 def main():
     install_chromium()
 
@@ -465,6 +532,9 @@ def main():
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
 
+            # Display the final poster
+            st.image(final_poster_image, caption="Final Poster", use_column_width=True)
+            
             # Create a zip file containing all images
             with io.BytesIO() as zip_buffer:
                 with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, False) as zip_file:
@@ -472,10 +542,17 @@ def main():
                     poster_bytes = io.BytesIO()
                     poster_image.save(poster_bytes, format='PNG')
                     poster_bytes = poster_bytes.getvalue()
-
+        
                     zip_file.writestr("poster.png", poster_bytes)
                     zip_file.writestr("top_10.png", html_image)
                     zip_file.writestr("scatter_plot.png", scatter_image)
+                    
+                    # Add the new final poster
+                    final_poster_image = create_final_poster_image()
+                    final_poster_bytes = io.BytesIO()
+                    final_poster_image.save(final_poster_bytes, format='PNG')
+                    final_poster_bytes = final_poster_bytes.getvalue()
+                    zip_file.writestr("final_poster.png", final_poster_bytes)
                 
                 zip_buffer.seek(0)
                 st.download_button(
@@ -484,8 +561,8 @@ def main():
                     file_name=f"top_10_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
-        else:
-            st.error("Please fill in all fields before generating the images.")
+            
+            
 
 if __name__ == "__main__":
     main()
