@@ -2,7 +2,7 @@ import streamlit as st
 import re
 import io
 import json
-import base64
+import imgkit
 from PIL import Image, ImageDraw, ImageFont
 
 def parse_text(text):
@@ -181,6 +181,16 @@ def create_poster_image(place_type, area):
 
     return image
 
+def html_to_image(html_content):
+    # Generate image from HTML
+    options = {
+        'format': 'png',
+        'encoding': 'UTF-8',
+        'quality': '100'
+    }
+    img = imgkit.from_string(html_content, False, options=options)
+    return img
+
 def main():
     st.title("Top 10 Places Generator")
 
@@ -221,6 +231,15 @@ def main():
                 label="Download Poster Image",
                 data=poster_image_bytes,
                 file_name=f"poster_{place_type}_{area}.png",
+                mime="image/png"
+            )
+
+            # Convert HTML to image and provide download link
+            html_image = html_to_image(html_output)
+            st.download_button(
+                label="Download Top 10 as Image",
+                data=html_image,
+                file_name=f"top_10_{place_type}_{area}.png",
                 mime="image/png"
             )
         else:
