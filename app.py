@@ -334,7 +334,7 @@ def create_poster_image(place_type, area):
     
     return image
 
-def html_to_image(html_content):
+def html_to_image_top10(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={'width': 600, 'height': 800})
@@ -376,20 +376,20 @@ def html_to_image(html_content):
         
         return screenshot, bounding_box['height']
 
-# def html_to_image(html_content):
-#     with sync_playwright() as p:
-#         browser = p.chromium.launch()
-#         page = browser.new_page(viewport={'width': 600, 'height': 800})
-#         page.set_content(html_content)
+def html_to_image(html_content):
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 600, 'height': 800})
+        page.set_content(html_content)
         
-#         # Wait for any animations or lazy-loaded content to finish
-#         page.wait_for_timeout(1000)
+        # Wait for any animations or lazy-loaded content to finish
+        page.wait_for_timeout(1000)
         
-#         # Capture the screenshot
-#         screenshot = page.screenshot(full_page=True)
-#         browser.close()
+        # Capture the screenshot
+        screenshot = page.screenshot(full_page=True)
+        browser.close()
         
-#         return screenshot
+        return screenshot
         
 def main():
     install_chromium()
@@ -415,14 +415,18 @@ def main():
             places = parse_text(text_input)
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
+
+            # Create and display poster image
+            poster_image = create_poster_image(place_type, area)
+            st.image(poster_image, caption="Poster", use_column_width=True)
+
+            
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
             st.markdown("### Top 10 Places")
             st.info("The image above shows the top 10 places.")
             
-            # Create and display poster image
-            poster_image = create_poster_image(place_type, area)
-            st.image(poster_image, caption="Poster", use_column_width=True)
+            
 
             # Create scatter plot
             scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
@@ -432,7 +436,7 @@ def main():
             # Convert HTML to image
             with st.spinner("Generating Top 10 image..."):
                 try:
-                    html_image = html_to_image(html_output)
+                    html_image = html_to_image_top10(html_output)
                     
                     if html_image is not None:
                         st.success(f"Top 10 image generated successfully!")
