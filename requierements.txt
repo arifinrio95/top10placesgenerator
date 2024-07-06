@@ -1,4 +1,3 @@
 streamlit
 pillow
-selenium
-webdriver-manager
+html2image
