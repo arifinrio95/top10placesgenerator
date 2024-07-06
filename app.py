@@ -436,7 +436,7 @@ def main():
             # Convert HTML to image
             with st.spinner("Generating Top 10 image..."):
                 try:
-                    html_image = html_to_image_top10(html_output)
+                    html_image, html_height = html_to_image_top10(html_output)
                     
                     if html_image is not None:
                         st.success(f"Top 10 image generated successfully!")
