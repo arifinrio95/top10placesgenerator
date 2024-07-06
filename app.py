@@ -163,9 +163,14 @@ def create_poster_image(place_type, area):
     title = f"{place_type} terbaik di {area}"
     subtitle = "Menurut google reviews"
 
-    # Calculate text positions
-    title_width, title_height = draw.textsize(title, font=font_large)
-    subtitle_width, subtitle_height = draw.textsize(subtitle, font=font_small)
+    # Calculate text positions using the newer method
+    title_bbox = draw.textbbox((0, 0), title, font=font_large)
+    title_width = title_bbox[2] - title_bbox[0]
+    title_height = title_bbox[3] - title_bbox[1]
+
+    subtitle_bbox = draw.textbbox((0, 0), subtitle, font=font_small)
+    subtitle_width = subtitle_bbox[2] - subtitle_bbox[0]
+    subtitle_height = subtitle_bbox[3] - subtitle_bbox[1]
 
     title_position = ((width - title_width) // 2, (height - title_height - subtitle_height) // 2)
     subtitle_position = ((width - subtitle_width) // 2, title_position[1] + title_height + 20)
