@@ -401,7 +401,7 @@ def html_to_image(html_content):
         
         return screenshot
 
-def create_final_poster_html(place_type, area):
+def create_final_poster_html():
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -446,13 +446,12 @@ def create_final_poster_html(place_type, area):
     </head>
     <body>
         <div class="poster-container">
-            <h1 class="title">Tempat apa lagi yang harus diranking?</h1>
-            # <p class="subtitle">Menurut google reviews</p>
+            <h1 class="title">Tempat apa lagi yang harus di-ranking?</h1>
         </div>
     </body>
     </html>
     '''
-    return html_template.format(place_type=place_type, area=area)
+    return html_template
 
 def create_final_poster_image():
     html_content = create_final_poster_html()
