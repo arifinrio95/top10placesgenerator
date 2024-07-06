@@ -456,7 +456,7 @@ def create_final_poster_html(place_type, area):
     </body>
     </html>
     '''
-    return html_template.format(place_type=place_type, area=area)
+    return html_template
 
 def create_final_poster_image():
     html_content = create_final_poster_html()
