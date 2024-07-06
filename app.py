@@ -203,7 +203,7 @@ def create_poster_image(place_type, area):
 
 def html_to_image(html_content):
     target_width = 600
-    target_height = 800  # 3:4 aspect ratio
+    min_height = 800  # Minimum height, can be increased if needed
 
     try:
         with sync_playwright() as p:
@@ -211,8 +211,8 @@ def html_to_image(html_content):
             page = browser.new_page()
             page.set_content(html_content)
             
-            # Set viewport size
-            page.set_viewport_size({"width": target_width, "height": target_height})
+            # Set initial viewport size
+            page.set_viewport_size({"width": target_width, "height": min_height})
             
             # Evaluate content height
             content_height = page.evaluate("""() => {
@@ -223,39 +223,36 @@ def html_to_image(html_content):
             if content_height == 0:
                 raise ValueError("Could not determine content height")
 
-            # If content is taller than target height, adjust the scale
-            if content_height > target_height:
-                scale = target_height / content_height
-                page.evaluate(f"""() => {{
-                    const container = document.querySelector('.poster-container');
-                    if (container) {{
-                        container.style.transform = 'scale({scale})';
-                        container.style.transformOrigin = 'top left';
-                        container.style.width = '{target_width / scale}px';
-                        container.style.height = '{target_height / scale}px';
-                    }}
-                }}""")
+            # Adjust the height to fit all content, rounding up to the nearest 10 pixels
+            adjusted_height = max(min_height, math.ceil(content_height / 10) * 10)
 
-            # Ensure the container fits the viewport
+            # Set the container style to ensure all content is visible and centered
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
                     container.style.width = '{target_width}px';
-                    container.style.height = '{target_height}px';
-                    container.style.overflow = 'hidden';
+                    container.style.minHeight = '{adjusted_height}px';
+                    container.style.backgroundColor = 'white';
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'column';
+                    container.style.alignItems = 'center';
+                    container.style.justifyContent = 'flex-start';
                     container.style.padding = '20px';
                     container.style.boxSizing = 'border-box';
                 }}
             }}""")
             
+            # Adjust viewport to match the content
+            page.set_viewport_size({"width": target_width, "height": adjusted_height})
+
             # Take the screenshot of the specific element
             screenshot_bytes = page.locator('.poster-container').screenshot()
             browser.close()
             
-            return screenshot_bytes
+            return screenshot_bytes, adjusted_height
     except Exception as e:
         st.error(f"An error occurred while generating the image: {str(e)}")
-        return None
+        return None, None
         
 def main():
     install_chromium()
@@ -304,7 +301,7 @@ def main():
 
             # Convert HTML to image and provide download link
             with st.spinner("Generating Top 10 image..."):
-                html_image = html_to_image(html_output)
+                html_image, image_height = html_to_image(html_output)
             
             if html_image is not None:
                 try:
@@ -314,7 +311,7 @@ def main():
                         file_name=f"top_10_{place_type}_{area}.png",
                         mime="image/png"
                     )
-                    st.success("Top 10 image generated successfully!")
+                    st.success(f"Top 10 image generated successfully! Image size: 600x{image_height} pixels")
                 except Exception as e:
                     st.error(f"Failed to create download button for Top 10 image: {str(e)}")
                     st.info("You can still use the HTML version above.")
