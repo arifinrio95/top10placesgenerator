@@ -228,7 +228,7 @@ def main():
 
             # Display HTML content
             st.components.v1.html(html_output, height=600, scrolling=True)
-            st.markdown("### Top 10 Places")
+            # st.markdown("### Top 10 Places")
             # st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
             # # Create and display poster image
