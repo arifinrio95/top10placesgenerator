@@ -59,6 +59,7 @@ def create_html(places, title):
                 padding: 20px;
             }}
             .container {{
+                width: 100%;
                 max-width: 600px;
                 margin: 0 auto;
                 position: relative;
@@ -162,7 +163,7 @@ def create_html(places, title):
     )
 
 def create_poster_image(place_type, area):
-    width, height = 800, 600
+    width, height = 600, 800
     image = Image.new('RGB', (width, height), color='white')
     draw = ImageDraw.Draw(image)
     
@@ -198,6 +199,7 @@ def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
+        page.set_viewport_size({"width": 600, "height": 800})
         page.set_content(html_content)
         image = page.screenshot(full_page=True)
         browser.close()
@@ -228,7 +230,7 @@ def main():
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
 
             # Display HTML content
-            st.components.v1.html(html_output, height=600, scrolling=True)
+            st.components.v1.html(html_output, height=800, scrolling=True)
             st.markdown("### Top 10 Places")
             st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
