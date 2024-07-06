@@ -202,8 +202,8 @@ def create_poster_image(place_type, area):
     return image
 
 def html_to_image(html_content):
-    max_width = 800  # Reduced from 1200
-    max_height = 1000  # Reduced from 1600
+    target_width = 600
+    target_height = 800  # 3:4 aspect ratio
 
     try:
         with sync_playwright() as p:
@@ -212,9 +212,7 @@ def html_to_image(html_content):
             page.set_content(html_content)
             
             # Set initial viewport size
-            initial_width = min(600, max_width)
-            initial_height = min(800, max_height)
-            page.set_viewport_size({"width": initial_width, "height": initial_height})
+            page.set_viewport_size({"width": target_width, "height": target_height})
             
             # Evaluate content height
             content_height = page.evaluate('''() => {
@@ -225,22 +223,17 @@ def html_to_image(html_content):
             if content_height == 0:
                 raise ValueError("Could not determine content height")
 
-            # Calculate dimensions for 3:4 ratio, ensuring they don't exceed max values
-            target_width = min(initial_width, max_width)
-            target_height = min(int(target_width * 4 / 3), max_height)
-            
-            # If content is taller than target height, adjust width to maintain ratio
+            # If content is taller than target height, adjust the scale
             if content_height > target_height:
-                target_width = min(int(content_height * 3 / 4), max_width)
-                target_height = min(content_height, max_height)
-            
-            # Ensure dimensions are integers and within allowed range
-            target_width = max(1, min(int(target_width), max_width))
-            target_height = max(1, min(int(target_height), max_height))
+                scale = target_height / content_height
+                page.evaluate(f'''() => {{
+                    const container = document.querySelector('.poster-container');
+                    if (container) {{
+                        container.style.transform = 'scale({scale})';
+                        container.style.transformOrigin = 'top left';
+                    }}
+                }}''')
 
-            # Set final viewport size
-            page.set_viewport_size({"width": target_width, "height": target_height})
-            
             # Add padding to ensure all content is visible
             page.evaluate('''() => {
                 const container = document.querySelector('.poster-container');
@@ -251,7 +244,9 @@ def html_to_image(html_content):
             }''')
             
             # Take the screenshot of the specific element
-            screenshot_bytes = page.locator('.poster-container').screenshot()
+            screenshot_bytes = page.locator('.poster-container').screenshot(
+                clip={"x": 0, "y": 0, "width": target_width, "height": target_height}
+            )
             browser.close()
             
             return screenshot_bytes
