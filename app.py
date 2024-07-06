@@ -203,80 +203,46 @@ def create_poster_image(place_type, area):
     return image
 
 def html_to_image(html_content):
-    target_width = 1200
-    max_height = 1600  # Maximum height, maintaining 3:4 ratio
-
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.set_content(html_content)
-            
-            # Evaluate content dimensions
-            content_dimensions = page.evaluate("""() => {
-                const posterContainer = document.querySelector('.poster-container');
-                if (posterContainer) {
-                    const rect = posterContainer.getBoundingClientRect();
-                    return {width: rect.width, height: rect.height};
-                }
-                return {width: 0, height: 0};
-            }""")
-            
-            if content_dimensions['width'] == 0 or content_dimensions['height'] == 0:
-                raise ValueError("Could not determine content dimensions")
-
-            # Calculate scaling factor to fit width
-            scale = target_width / content_dimensions['width']
-            scaled_height = content_dimensions['height'] * scale
-            
-            # Adjust height if it exceeds max_height
-            if scaled_height > max_height:
-                scale = max_height / content_dimensions['height']
-                scaled_width = content_dimensions['width'] * scale
-            else:
-                scaled_width = target_width
-
-            # Set the viewport and scale
-            page.set_viewport_size({"width": math.ceil(scaled_width), "height": math.ceil(scaled_height)})
-            
-            # Adjust the container style
-            page.evaluate(f"""() => {{
-                const container = document.querySelector('.poster-container');
-                if (container) {{
-                    container.style.width = '100%';
-                    container.style.height = '100%';
-                    container.style.margin = '0';
-                    container.style.padding = '0';
-                    container.style.boxSizing = 'border-box';
-                    container.style.display = 'flex';
-                    container.style.flexDirection = 'column';
-                    container.style.alignItems = 'center';
-                    container.style.justifyContent = 'flex-start';
-                    container.style.backgroundColor = 'white';
-                }}
-                document.body.style.margin = '0';
-                document.body.style.padding = '0';
-                document.body.style.backgroundColor = 'white';
-                document.body.style.width = '100%';
-                document.body.style.height = '100%';
-            }}""")
-            
-            # Take the screenshot
-            screenshot = page.screenshot(full_page=True)
-            browser.close()
-            
-            # Convert the screenshot to an image
-            img = Image.open(io.BytesIO(screenshot))
-            
-            # Convert the image back to bytes
-            img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format='PNG')
-            img_byte_arr = img_byte_arr.getvalue()
-            
-            return img_byte_arr, math.ceil(scaled_height)
-    except Exception as e:
-        st.error(f"An error occurred while generating the image: {str(e)}")
-        return None, None
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={'width': 1200, 'height': 1600})
+        page.set_content(html_content)
+        
+        # Wait for any animations or lazy-loaded content to finish
+        page.wait_for_timeout(1000)
+        
+        # Get the bounding box of the content
+        bounding_box = page.evaluate('''() => {
+            const body = document.body;
+            const html = document.documentElement;
+            const height = Math.max(
+                body.scrollHeight, body.offsetHeight,
+                html.clientHeight, html.scrollHeight, html.offsetHeight
+            );
+            return {
+                width: document.documentElement.clientWidth,
+                height: height
+            };
+        }''')
+        
+        # Calculate the aspect ratio
+        aspect_ratio = 1600 / 1200
+        content_ratio = bounding_box['height'] / bounding_box['width']
+        
+        if content_ratio > aspect_ratio:
+            # Content is taller, adjust width
+            new_width = math.ceil(bounding_box['height'] / aspect_ratio)
+            page.set_viewport_size({'width': new_width, 'height': bounding_box['height']})
+        else:
+            # Content is wider, adjust height
+            new_height = math.ceil(bounding_box['width'] * aspect_ratio)
+            page.set_viewport_size({'width': bounding_box['width'], 'height': new_height})
+        
+        # Capture the screenshot
+        screenshot = page.screenshot(full_page=True)
+        browser.close()
+        
+        return screenshot, bounding_box['height']
         
 def main():
     install_chromium()
