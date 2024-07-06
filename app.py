@@ -59,24 +59,20 @@ def create_html(places, title):
                 padding: 20px;
                 box-sizing: border-box;
                 width: 600px;
-                height: 800px;
+                height: auto;
                 overflow: hidden;
             }}
             .container {{
                 width: 100%;
-                height: 100%;
+                max-width: 600px;
+                margin: 0 auto;
                 padding: 20px;
                 box-sizing: border-box;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start;
-                overflow: hidden;
             }}
             h1 {{
                 text-align: center;
                 color: #1F2937;
                 margin-bottom: 20px;
-                font-size: 24px;
             }}
             .place {{
                 border-bottom: 1px solid #E5E7EB;
@@ -86,13 +82,13 @@ def create_html(places, title):
                 border-bottom: none;
             }}
             .place-name {{
-                font-size: 1em;
+                font-size: 1.2em;
                 font-weight: bold;
                 color: #1F2937;
             }}
             .address {{
                 color: #6B7280;
-                font-size: 0.8em;
+                font-size: 0.9em;
                 margin: 5px 0;
             }}
             .rating {{
@@ -105,19 +101,19 @@ def create_html(places, title):
             }}
             .reviews {{
                 color: #6B7280;
-                font-size: 0.8em;
+                font-size: 0.9em;
                 margin-left: 10px;
             }}
             .footer {{
                 text-align: center;
                 color: #6B7280;
-                font-size: 0.7em;
+                font-size: 0.8em;
                 margin-top: 10px;
             }}
         </style>
     </head>
     <body>
-        <div class="container">
+        <div class="container poster-container">
             <h1>{title}</h1>
             <div id="placesList"></div>
             <div class="footer">@TangerangSelatanSateLovers • Data akurat per Juli 2024</div>
@@ -208,19 +204,20 @@ def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        # Set the viewport to 600x1600 to ensure all content fits
-        page.set_viewport_size({"width": 600, "height": 1600})
         page.set_content(html_content)
-        # Capture the screenshot
-        image_bytes = page.screenshot(full_page=True)
+        
+        # Evaluate content height and set the viewport dynamically
+        content_height = page.evaluate('''() => {
+            const posterContainer = document.querySelector('.poster-container');
+            return posterContainer.getBoundingClientRect().height;
+        }''')
+        page.set_viewport_size({"width": 600, "height": int(content_height)})
+        
+        # Take the screenshot of the specific element
+        screenshot_bytes = page.locator('.poster-container').screenshot()
         browser.close()
-
-    # Open the captured image and crop it to 600x800
-    image = Image.open(io.BytesIO(image_bytes))
-    cropped_image = image.crop((0, 0, 600, 800))
-    output = io.BytesIO()
-    cropped_image.save(output, format="PNG")
-    return output.getvalue()
+        
+        return screenshot_bytes
 
 def main():
     install_chromium()
