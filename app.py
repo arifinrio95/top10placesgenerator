@@ -213,7 +213,7 @@ def html_to_image(html_content):
             page.set_content(html_content)
             
             # Set initial viewport size
-            page.set_viewport_size({"width": target_width, "height": target_height})
+            page.set_viewport_size({"width": target_width, "height": target_height * 2})  # Doubled height to ensure all content is visible
             
             # Evaluate content dimensions
             content_dimensions = page.evaluate("""() => {
@@ -228,41 +228,50 @@ def html_to_image(html_content):
             if content_dimensions['width'] == 0 or content_dimensions['height'] == 0:
                 raise ValueError("Could not determine content dimensions")
 
-            # Calculate scaling factor to fit height and width
-            scale = min(target_width / content_dimensions['width'], target_height / content_dimensions['height'])
+            # Calculate scaling factor to fit width
+            scale = target_width / content_dimensions['width']
             
-            # Calculate padding to center content
-            padding_x = max(0, (target_width - content_dimensions['width'] * scale) / 2)
-            padding_y = max(0, (target_height - content_dimensions['height'] * scale) / 2)
-
-            # Set the container style to ensure all content is visible and centered
+            # Set the container style to ensure all content is visible and at the top
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
                     container.style.transform = 'scale({scale})';
                     container.style.transformOrigin = 'top center';
                     container.style.margin = '0 auto';
-                    container.style.padding = '{padding_y}px {padding_x}px';
+                    container.style.padding = '20px';
                     container.style.boxSizing = 'border-box';
                     container.style.backgroundColor = 'white';
+                    container.style.width = '{target_width / scale}px';
                 }}
                 document.body.style.backgroundColor = 'white';
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
                 document.body.style.display = 'flex';
                 document.body.style.justifyContent = 'center';
-                document.body.style.alignItems = 'center';
+                document.body.style.alignItems = 'flex-start';
                 document.body.style.minHeight = '100vh';
             }}""")
             
-            # Adjust viewport to match the target dimensions
-            page.set_viewport_size({"width": target_width, "height": target_height})
-
             # Take the screenshot of the entire page
-            screenshot_bytes = page.screenshot(full_page=False, clip={"x": 0, "y": 0, "width": target_width, "height": target_height})
+            screenshot = page.screenshot(full_page=True)
             browser.close()
             
-            return screenshot_bytes, target_height
+            # Process the image to crop to the desired size
+            from PIL import Image
+            import io
+            
+            img = Image.open(io.BytesIO(screenshot))
+            img_width, img_height = img.size
+            
+            # Crop the image to the target size, starting from the top
+            cropped_img = img.crop((0, 0, target_width, target_height))
+            
+            # Convert the cropped image back to bytes
+            img_byte_arr = io.BytesIO()
+            cropped_img.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+            
+            return img_byte_arr, target_height
     except Exception as e:
         st.error(f"An error occurred while generating the image: {str(e)}")
         return None, None
