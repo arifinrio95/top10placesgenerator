@@ -56,23 +56,15 @@ def create_html(places, title):
             body {{
                 font-family: Arial, sans-serif;
                 margin: 0;
-                padding: 0;
-                width: 600px;
-                height: 800px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                padding: 20px;
                 box-sizing: border-box;
             }}
             .container {{
                 width: 100%;
-                height: 100%;
+                max-width: 800px;
+                margin: 0 auto;
                 padding: 20px;
                 box-sizing: border-box;
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
             }}
             h1 {{
                 text-align: center;
@@ -209,11 +201,15 @@ def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.set_viewport_size({"width": 600, "height": 800})
+        # Set the viewport to a larger size to ensure all content fits
+        page.set_viewport_size({"width": 800, "height": 1600})
         page.set_content(html_content)
-        image = page.screenshot(full_page=True)
-        browser.close()
-        return image
+        # Scale the image down to 600x800 to maintain the 3:4 ratio
+        image = page.screenshot(full_page=True, clip={"x": 0, "y": 0, "width": 800, "height": 1600})
+        image = Image.open(io.BytesIO(image)).resize((600, 800), Image.ANTIALIAS)
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+        return output.getvalue()
 
 def main():
     install_chromium()
