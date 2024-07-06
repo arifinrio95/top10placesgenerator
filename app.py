@@ -202,8 +202,8 @@ def create_poster_image(place_type, area):
     return image
 
 def html_to_image(html_content):
-    max_width = 1200
-    max_height = 1600
+    max_width = 800  # Reduced from 1200
+    max_height = 1000  # Reduced from 1600
 
     try:
         with sync_playwright() as p:
@@ -219,26 +219,35 @@ def html_to_image(html_content):
             # Evaluate content height
             content_height = page.evaluate('''() => {
                 const posterContainer = document.querySelector('.poster-container');
-                return posterContainer.getBoundingClientRect().height;
+                return posterContainer ? posterContainer.getBoundingClientRect().height : 0;
             }''')
             
-            # Calculate dimensions for 3:4 ratio
-            target_width = initial_width
-            target_height = int(target_width * 4 / 3)
+            if content_height == 0:
+                raise ValueError("Could not determine content height")
+
+            # Calculate dimensions for 3:4 ratio, ensuring they don't exceed max values
+            target_width = min(initial_width, max_width)
+            target_height = min(int(target_width * 4 / 3), max_height)
             
             # If content is taller than target height, adjust width to maintain ratio
             if content_height > target_height:
                 target_width = min(int(content_height * 3 / 4), max_width)
                 target_height = min(content_height, max_height)
             
+            # Ensure dimensions are integers and within allowed range
+            target_width = max(1, min(int(target_width), max_width))
+            target_height = max(1, min(int(target_height), max_height))
+
             # Set final viewport size
             page.set_viewport_size({"width": target_width, "height": target_height})
             
             # Add padding to ensure all content is visible
             page.evaluate('''() => {
                 const container = document.querySelector('.poster-container');
-                container.style.padding = '20px';
-                container.style.boxSizing = 'border-box';
+                if (container) {
+                    container.style.padding = '20px';
+                    container.style.boxSizing = 'border-box';
+                }
             }''')
             
             # Take the screenshot of the specific element
@@ -296,7 +305,9 @@ def main():
             )
 
             # Convert HTML to image and provide download link
-            html_image = html_to_image(html_output)
+            with st.spinner("Generating Top 10 image..."):
+                html_image = html_to_image(html_output)
+            
             if html_image is not None:
                 try:
                     st.download_button(
@@ -305,10 +316,13 @@ def main():
                         file_name=f"top_10_{place_type}_{area}.png",
                         mime="image/png"
                     )
+                    st.success("Top 10 image generated successfully!")
                 except Exception as e:
                     st.error(f"Failed to create download button for Top 10 image: {str(e)}")
+                    st.info("You can still use the HTML version above.")
             else:
                 st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
+                st.info("If this issue persists, please try with a smaller dataset or contact support.")
         else:
             st.error("Please fill in all fields before generating the images.")
 
