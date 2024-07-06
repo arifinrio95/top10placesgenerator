@@ -213,7 +213,7 @@ def html_to_image(html_content):
             page.set_content(html_content)
             
             # Set initial viewport size
-            page.set_viewport_size({"width": target_width, "height": target_height * 2})  # Doubled height to ensure all content is visible
+            page.set_viewport_size({"width": target_width, "height": 3000})  # Set a large initial height
             
             # Evaluate content dimensions
             content_dimensions = page.evaluate("""() => {
@@ -231,44 +231,47 @@ def html_to_image(html_content):
             # Calculate scaling factor to fit width
             scale = target_width / content_dimensions['width']
             
-            # Set the container style to ensure all content is visible and at the top
+            # Calculate the scaled height of the content
+            scaled_content_height = content_dimensions['height'] * scale
+            
+            # Determine the final height (either scaled content height or target height, whichever is larger)
+            final_height = max(scaled_content_height, target_height)
+            
+            # Set the container style
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
-                    container.style.transform = 'scale({scale})';
-                    container.style.transformOrigin = 'top center';
-                    container.style.margin = '0 auto';
+                    container.style.width = '{target_width}px';
+                    container.style.minHeight = '{final_height}px';
+                    container.style.backgroundColor = 'white';
                     container.style.padding = '20px';
                     container.style.boxSizing = 'border-box';
-                    container.style.backgroundColor = 'white';
-                    container.style.width = '{target_width / scale}px';
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'column';
+                    container.style.alignItems = 'center';
                 }}
-                document.body.style.backgroundColor = 'white';
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
-                document.body.style.display = 'flex';
-                document.body.style.justifyContent = 'center';
-                document.body.style.alignItems = 'flex-start';
-                document.body.style.minHeight = '100vh';
+                document.body.style.backgroundColor = 'white';
             }}""")
             
             # Take the screenshot of the entire page
             screenshot = page.screenshot(full_page=True)
             browser.close()
             
-            # Process the image to crop to the desired size
-            from PIL import Image
-            import io
-            
+            # Process the image
             img = Image.open(io.BytesIO(screenshot))
             img_width, img_height = img.size
             
-            # Crop the image to the target size, starting from the top
-            cropped_img = img.crop((0, 0, target_width, target_height))
+            # Create a new white image with the target dimensions
+            new_img = Image.new('RGB', (target_width, target_height), color='white')
             
-            # Convert the cropped image back to bytes
+            # Paste the screenshot onto the new image
+            new_img.paste(img, (0, 0))
+            
+            # Convert the image back to bytes
             img_byte_arr = io.BytesIO()
-            cropped_img.save(img_byte_arr, format='PNG')
+            new_img.save(img_byte_arr, format='PNG')
             img_byte_arr = img_byte_arr.getvalue()
             
             return img_byte_arr, target_height
