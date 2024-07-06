@@ -401,14 +401,14 @@ def html_to_image(html_content):
         
         return screenshot
 
-def create_final_poster_html():
+def create_final_poster_html(place_type, area):
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Final Poster</title>
+        <title>Poster</title>
         <style>
             body {{
                 font-family: Arial, sans-serif;
@@ -432,21 +432,27 @@ def create_final_poster_html():
                 box-sizing: border-box;
             }}
             .title {{
-                font-size: 36px;
+                font-size: 48px;
                 font-weight: bold;
                 margin-bottom: 20px;
                 color: #1F2937;
+            }}
+            .subtitle {{
+                font-size: 24px;
+                font-style: italic;
+                color: #6B7280;
             }}
         </style>
     </head>
     <body>
         <div class="poster-container">
-            <h1 class="title">Tempat apa lagi yang mau kamu cek rankingnya?</h1>
+            <h1 class="title">Tempat apa lagi yang harus diranking?</h1>
+            # <p class="subtitle">Menurut google reviews</p>
         </div>
     </body>
     </html>
     '''
-    return html_template
+    return html_template.format(place_type=place_type, area=area)
 
 def create_final_poster_image():
     html_content = create_final_poster_html()
@@ -514,10 +520,10 @@ def main():
             
             
 
-            # Create scatter plot
-            scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
-            scatter_image = html_to_image(scatter_html)
-            st.image(scatter_image, caption="Scatter Plot", use_column_width=True)
+            # # Create scatter plot
+            # scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
+            # scatter_image = html_to_image(scatter_html)
+            # st.image(scatter_image, caption="Scatter Plot", use_column_width=True)
 
             # Convert HTML to image
             with st.spinner("Generating Top 10 image..."):
