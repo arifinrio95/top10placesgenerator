@@ -1,3 +1,5 @@
 streamlit
 pillow
 html2image
+numpy
+htmlwebshot
