@@ -209,12 +209,12 @@ def main():
 
     st.header("Cara Kerja:")
     st.write("""1. Cari tempat yang ingin kamu extract top 10-nya di google maps. Buka google maps.
-    \n2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
-    \n3. Klik pada opsi menu "Di Sekitar" atau "Nearby" jika settinganmu bahasa Enggres.
-    \n4. Ketik nama tempat yang ingin kamu extract. Kamu bisa juga filter dulu misal yg ratingnya > 4.5, atau yang harganya murah ($-nya satu), bebas lah.
-    \n5. Copy semua hasilnya dengan block semua text dari tempat pertama sampai selesai, biarkan dia scroll down terus sampe habis.
-    \n6. Paste di kolom Place Data dibawah.
-    \n7. Tunggu hasilnya akan berupa image yang siap kamu download.
+    2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
+    3. Klik pada opsi menu "Di Sekitar" atau "Nearby" jika settinganmu bahasa Enggres.
+    4. Ketik nama tempat yang ingin kamu extract. Kamu bisa juga filter dulu misal yg ratingnya > 4.5, atau yang harganya murah ($-nya satu), bebas lah.
+    5. Copy semua hasilnya dengan block semua text dari tempat pertama sampai selesai, biarkan dia scroll down terus sampe habis.
+    6. Paste di kolom Place Data dibawah.
+    7. Tunggu hasilnya akan berupa image yang siap kamu download.
     """)
 
     area = st.text_input("Enter the area name (untuk judul posternya nanti):")
@@ -228,24 +228,24 @@ def main():
 
             # Display HTML content
             st.components.v1.html(html_output, height=600, scrolling=True)
-            # st.markdown("### Top 10 Places")
-            # st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
+            st.markdown("### Top 10 Places")
+            st.info("The image above shows the top 10 places. You can take a screenshot of this for sharing.")
             
-            # # Create and display poster image
-            # poster_image = create_poster_image(place_type, area)
-            # st.image(poster_image, caption="Poster", use_column_width=True)
+            # Create and display poster image
+            poster_image = create_poster_image(place_type, area)
+            st.image(poster_image, caption="Poster", use_column_width=True)
 
-            # # Provide download link for poster image
-            # buffered_poster = io.BytesIO()
-            # poster_image.save(buffered_poster, format="PNG")
-            # poster_image_bytes = buffered_poster.getvalue()
+            # Provide download link for poster image
+            buffered_poster = io.BytesIO()
+            poster_image.save(buffered_poster, format="PNG")
+            poster_image_bytes = buffered_poster.getvalue()
 
-            # st.download_button(
-            #     label="Download Poster Image",
-            #     data=poster_image_bytes,
-            #     file_name=f"poster_{place_type}_{area}.png",
-            #     mime="image/png"
-            # )
+            st.download_button(
+                label="Download Poster Image",
+                data=poster_image_bytes,
+                file_name=f"poster_{place_type}_{area}.png",
+                mime="image/png"
+            )
 
             # Convert HTML to image and provide download link
             html_image = html_to_image(html_output)
