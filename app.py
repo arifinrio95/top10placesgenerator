@@ -204,7 +204,7 @@ def create_poster_image(place_type, area):
 
 def html_to_image(html_content):
     target_width = 600
-    min_height = 800  # Minimum height, can be increased if needed
+    target_height = 800  # 3:4 ratio
 
     try:
         with sync_playwright() as p:
@@ -213,44 +213,55 @@ def html_to_image(html_content):
             page.set_content(html_content)
             
             # Set initial viewport size
-            page.set_viewport_size({"width": target_width, "height": min_height})
+            page.set_viewport_size({"width": target_width, "height": target_height})
             
-            # Evaluate content height
-            content_height = page.evaluate("""() => {
+            # Evaluate content dimensions
+            content_dimensions = page.evaluate("""() => {
                 const posterContainer = document.querySelector('.poster-container');
-                return posterContainer ? posterContainer.getBoundingClientRect().height : 0;
+                if (posterContainer) {
+                    const rect = posterContainer.getBoundingClientRect();
+                    return {width: rect.width, height: rect.height};
+                }
+                return {width: 0, height: 0};
             }""")
             
-            if content_height == 0:
-                raise ValueError("Could not determine content height")
+            if content_dimensions['width'] == 0 or content_dimensions['height'] == 0:
+                raise ValueError("Could not determine content dimensions")
 
-            # Adjust the height to fit all content, rounding up to the nearest 10 pixels
-            adjusted_height = max(min_height, math.ceil(content_height / 10) * 10)
+            # Calculate scaling factor to fit height
+            scale = min(1, target_height / content_dimensions['height'])
+            
+            # Calculate padding to center content horizontally
+            padding_x = max(0, (target_width - content_dimensions['width'] * scale) / 2)
 
             # Set the container style to ensure all content is visible and centered
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
-                    container.style.width = '{target_width}px';
-                    container.style.minHeight = '{adjusted_height}px';
-                    container.style.backgroundColor = 'white';
-                    container.style.display = 'flex';
-                    container.style.flexDirection = 'column';
-                    container.style.alignItems = 'center';
-                    container.style.justifyContent = 'flex-start';
-                    container.style.padding = '20px';
+                    container.style.transform = 'scale({scale})';
+                    container.style.transformOrigin = 'top center';
+                    container.style.margin = '0 auto';
+                    container.style.padding = '20px {padding_x}px';
                     container.style.boxSizing = 'border-box';
+                    container.style.backgroundColor = 'white';
                 }}
+                document.body.style.backgroundColor = 'white';
+                document.body.style.margin = '0';
+                document.body.style.padding = '0';
+                document.body.style.display = 'flex';
+                document.body.style.justifyContent = 'center';
+                document.body.style.alignItems = 'flex-start';
+                document.body.style.minHeight = '100vh';
             }}""")
             
-            # Adjust viewport to match the content
-            page.set_viewport_size({"width": target_width, "height": adjusted_height})
+            # Adjust viewport to match the target dimensions
+            page.set_viewport_size({"width": target_width, "height": target_height})
 
-            # Take the screenshot of the specific element
-            screenshot_bytes = page.locator('.poster-container').screenshot()
+            # Take the screenshot of the entire page
+            screenshot_bytes = page.screenshot(full_page=False, clip={"x": 0, "y": 0, "width": target_width, "height": target_height})
             browser.close()
             
-            return screenshot_bytes, adjusted_height
+            return screenshot_bytes, target_height
     except Exception as e:
         st.error(f"An error occurred while generating the image: {str(e)}")
         return None, None
