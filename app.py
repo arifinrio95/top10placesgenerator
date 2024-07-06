@@ -6,6 +6,7 @@ import subprocess
 import sys
 from PIL import Image, ImageDraw, ImageFont
 from playwright.sync_api import sync_playwright
+import math
 
 def install_chromium():
     try:
@@ -301,23 +302,22 @@ def main():
 
             # Convert HTML to image and provide download link
             with st.spinner("Generating Top 10 image..."):
-                html_image, image_height = html_to_image(html_output)
-            
-            if html_image is not None:
                 try:
-                    st.download_button(
-                        label="Download Top 10 as Image",
-                        data=html_image,
-                        file_name=f"top_10_{place_type}_{area}.png",
-                        mime="image/png"
-                    )
-                    st.success(f"Top 10 image generated successfully! Image size: 600x{image_height} pixels")
+                    html_image, image_height = html_to_image(html_output)
+                    
+                    if html_image is not None and image_height is not None:
+                        st.download_button(
+                            label="Download Top 10 as Image",
+                            data=html_image,
+                            file_name=f"top_10_{place_type}_{area}.png",
+                            mime="image/png"
+                        )
+                        st.success(f"Top 10 image generated successfully! Image size: 600x{image_height} pixels")
+                    else:
+                        st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
                 except Exception as e:
-                    st.error(f"Failed to create download button for Top 10 image: {str(e)}")
+                    st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
-            else:
-                st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
-                st.info("If this issue persists, please try with a smaller dataset or contact support.")
         else:
             st.error("Please fill in all fields before generating the images.")
 
