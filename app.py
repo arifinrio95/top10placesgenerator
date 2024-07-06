@@ -3,8 +3,6 @@ import re
 import json
 import io
 import base64
-from PIL import Image
-from html2image import Html2Image
 
 def parse_text(text):
     places = []
@@ -139,10 +137,21 @@ def create_html(places, title):
         places_json=json.dumps(top_10)
     )
 
-def html_to_image(html_content):
-    hti = Html2Image()
-    img_byte_array = hti.screenshot(html_str=html_content, size=(800, 1000), save_as='top_10_places.png')
-    return Image.open(io.BytesIO(img_byte_array))
+def create_preview_html(places, title):
+    top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
+    top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
+    
+    html = f"<h1>{title}</h1>"
+    for i, place in enumerate(top_10, 1):
+        html += f"""
+        <div style="margin-bottom: 20px;">
+            <h3>{i}. {place['name']}</h3>
+            <p>📍 {place['address']}</p>
+            <p>Rating: {place['rating']:.1f} ({place['reviews']} reviews)</p>
+        </div>
+        """
+    html += '<p style="text-align: center; color: gray; font-size: 0.8em;">@TangerangSelatanSateLovers • Data akurat per Juli 2024</p>'
+    return html
 
 def main():
     st.title("Top 10 Places Generator")
@@ -161,30 +170,26 @@ def main():
     place_type = st.text_input("Enter the type of place (untuk judul juga):")
     text_input = st.text_area("Enter the place data (untuk diparsing dan dibuatkan poster):", height=300)
 
-    if st.button("Generate Image"):
+    if st.button("Generate HTML"):
         if area and place_type and text_input:
             places = parse_text(text_input)
             html_output = create_html(places, f"Top 10 {place_type} in {area}")
+            preview_html = create_preview_html(places, f"Top 10 {place_type} in {area}")
             
-            image = html_to_image(html_output)
-            
-            img_byte_arr = io.BytesIO()
-            image.save(img_byte_arr, format='PNG')
-            img_byte_arr = img_byte_arr.getvalue()
-            
-            st.image(img_byte_arr, caption=f"Top 10 {place_type} in {area}", use_column_width=True)
-            
-            # Encode the bytes to base64
-            b64 = base64.b64encode(img_byte_arr).decode()
-            
-            href = f'<a href="data:image/png;base64,{b64}" download="top_10_{place_type}_{area}.png">Download Image</a>'
-            st.markdown(href, unsafe_allow_html=True)
+            # Display preview
+            st.markdown("### Preview")
+            st.components.v1.html(preview_html, height=600)
             
             # Display HTML
             st.markdown("### Generated HTML")
             st.code(html_output, language='html')
+            
+            # Provide download link for HTML
+            b64 = base64.b64encode(html_output.encode()).decode()
+            href = f'<a href="data:text/html;base64,{b64}" download="top_10_{place_type}_{area}.html">Download HTML</a>'
+            st.markdown(href, unsafe_allow_html=True)
         else:
-            st.error("Please fill in all fields before generating the image.")
+            st.error("Please fill in all fields before generating the HTML.")
 
 if __name__ == "__main__":
     main()
