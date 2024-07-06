@@ -78,22 +78,20 @@ def create_scatter_plot_html(places, title):
     </html>
     '''
 
-    scatter_data = []
-    for place in places:
-        scatter_data.append({
-            'x': [place['reviews']],
-            'y': [place['rating']],
-            'mode': 'markers+text',
-            'type': 'scatter',
-            'text': [f"{place['name']}<br>{place['rating']} ★<br>{place['reviews']} reviews"],
-            'textposition': 'top center',
-            'marker': { 'size': 10 },
-            'textfont': { 'size': 10 }
-        })
+    scatter_data = {{
+        'x': [place['reviews'] for place in places],
+        'y': [place['rating'] for place in places],
+        'mode': 'markers+text',
+        'type': 'scatter',
+        'text': [f"{{place['name']}}<br>{{place['rating']}} ★<br>{{place['reviews']}} reviews" for place in places],
+        'textposition': 'top center',
+        'marker': {{ 'size': 10 }},
+        'textfont': {{ 'size': 10 }}
+    }}
 
     return html_template.format(
         title=title,
-        data=json.dumps(scatter_data),
+        data=json.dumps([scatter_data]),
         x_min=x_min,
         x_max=x_max,
         y_min=y_min,
