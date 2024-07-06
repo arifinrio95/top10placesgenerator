@@ -53,14 +53,14 @@ def create_html(places, title):
         <title>{title}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <style>
-            body {
+            body {{
                 font-family: Arial, sans-serif;
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
                 background-color: #ffffff;
-            }
-            .container {
+            }}
+            .container {{
                 width: 100%;
                 max-width: 600px;
                 margin: 0 auto;
@@ -68,49 +68,49 @@ def create_html(places, title):
                 box-sizing: border-box;
                 border: 1px solid #E5E7EB;
                 background-color: #ffffff;
-            }
-            h1 {
+            }}
+            h1 {{
                 text-align: center;
                 color: #1F2937;
                 margin-bottom: 20px;
                 font-size: 24px;
-            }
-            .place {
+            }}
+            .place {{
                 border-bottom: 1px solid #E5E7EB;
                 padding: 10px 0;
-            }
-            .place:last-child {
+            }}
+            .place:last-child {{
                 border-bottom: none;
-            }
-            .place-name {
+            }}
+            .place-name {{
                 font-size: 16px;
                 font-weight: bold;
                 color: #1F2937;
-            }
-            .address {
+            }}
+            .address {{
                 color: #6B7280;
                 font-size: 12px;
                 margin: 5px 0;
-            }
-            .rating {
+            }}
+            .rating {{
                 display: flex;
                 align-items: center;
-            }
-            .stars {
+            }}
+            .stars {{
                 display: flex;
                 align-items: center;
-            }
-            .reviews {
+            }}
+            .reviews {{
                 color: #6B7280;
                 font-size: 12px;
                 margin-left: 10px;
-            }
-            .footer {
+            }}
+            .footer {{
                 text-align: center;
                 color: #6B7280;
                 font-size: 10px;
                 margin-top: 10px;
-            }
+            }}
         </style>
     </head>
     <body>
