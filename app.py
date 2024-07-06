@@ -206,9 +206,10 @@ def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        # Set the viewport to 600x800 to ensure all content fits
-        page.set_viewport_size({"width": 600, "height": 800})
+        # Set the viewport to fit the content dynamically
+        page.set_viewport_size({"width": 800, "height": 800})
         page.set_content(html_content)
+        # Capture the screenshot with the height fixed and dynamic width
         image = page.screenshot(full_page=True)
         browser.close()
         return image
