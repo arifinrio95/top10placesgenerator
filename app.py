@@ -204,16 +204,13 @@ def create_poster_image(place_type, area):
 
 def html_to_image(html_content):
     target_width = 1200
-    target_height = 1600  # 3:4 ratio
+    max_height = 1600  # Maximum height, maintaining 3:4 ratio
 
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page()
             page.set_content(html_content)
-            
-            # Set initial viewport size
-            page.set_viewport_size({"width": target_width, "height": target_height})
             
             # Evaluate content dimensions
             content_dimensions = page.evaluate("""() => {
@@ -228,24 +225,28 @@ def html_to_image(html_content):
             if content_dimensions['width'] == 0 or content_dimensions['height'] == 0:
                 raise ValueError("Could not determine content dimensions")
 
-            # Calculate scaling factor to fit height
-            scale = target_height / content_dimensions['height']
+            # Calculate scaling factor to fit width
+            scale = target_width / content_dimensions['width']
+            scaled_height = content_dimensions['height'] * scale
             
-            # Calculate the scaled width of the content
-            scaled_content_width = content_dimensions['width'] * scale
+            # Adjust height if it exceeds max_height
+            if scaled_height > max_height:
+                scale = max_height / content_dimensions['height']
+                scaled_width = content_dimensions['width'] * scale
+            else:
+                scaled_width = target_width
+
+            # Set the viewport and scale
+            page.set_viewport_size({"width": math.ceil(scaled_width), "height": math.ceil(scaled_height)})
             
-            # Calculate horizontal padding if needed
-            horizontal_padding = max(0, (target_width - scaled_content_width) / 2)
-            
-            # Set the container style
+            # Adjust the container style
             page.evaluate(f"""() => {{
                 const container = document.querySelector('.poster-container');
                 if (container) {{
-                    container.style.width = '{scaled_content_width}px';
-                    container.style.height = '{target_height}px';
-                    container.style.margin = '0 auto';
-                    container.style.paddingLeft = '{horizontal_padding}px';
-                    container.style.paddingRight = '{horizontal_padding}px';
+                    container.style.width = '100%';
+                    container.style.height = '100%';
+                    container.style.margin = '0';
+                    container.style.padding = '0';
                     container.style.boxSizing = 'border-box';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
@@ -256,12 +257,12 @@ def html_to_image(html_content):
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
                 document.body.style.backgroundColor = 'white';
-                document.body.style.width = '{target_width}px';
-                document.body.style.height = '{target_height}px';
+                document.body.style.width = '100%';
+                document.body.style.height = '100%';
             }}""")
             
-            # Take the screenshot of the entire page
-            screenshot = page.screenshot(full_page=False, clip={"x": 0, "y": 0, "width": target_width, "height": target_height})
+            # Take the screenshot
+            screenshot = page.screenshot(full_page=True)
             browser.close()
             
             # Convert the screenshot to an image
@@ -272,7 +273,7 @@ def html_to_image(html_content):
             img.save(img_byte_arr, format='PNG')
             img_byte_arr = img_byte_arr.getvalue()
             
-            return img_byte_arr, target_height
+            return img_byte_arr, math.ceil(scaled_height)
     except Exception as e:
         st.error(f"An error occurred while generating the image: {str(e)}")
         return None, None
