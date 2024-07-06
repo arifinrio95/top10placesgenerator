@@ -2,8 +2,8 @@ import streamlit as st
 import re
 import io
 import json
-import imgkit
 from PIL import Image, ImageDraw, ImageFont
+from playwright.sync_api import sync_playwright
 
 def parse_text(text):
     places = []
@@ -182,14 +182,13 @@ def create_poster_image(place_type, area):
     return image
 
 def html_to_image(html_content):
-    # Generate image from HTML
-    options = {
-        'format': 'png',
-        'encoding': 'UTF-8',
-        'quality': '100'
-    }
-    img = imgkit.from_string(html_content, False, options=options)
-    return img
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.set_content(html_content)
+        image = page.screenshot(full_page=True)
+        browser.close()
+        return image
 
 def main():
     st.title("Top 10 Places Generator")
