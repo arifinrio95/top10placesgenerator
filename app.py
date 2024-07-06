@@ -151,7 +151,7 @@ def main():
     st.write("""1. Cari tempat yang ingin kamu extract top 10-nya di google maps. Buka google maps.
     2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
     3. Klik pada opsi menu "Di Sekitar" atau "Nearby" jika settinganmu bahasa Enggres.
-    4. Ketik nama tempat yang ingin kamu extract.
+    4. Ketik nama tempat yang ingin kamu extract. Kamu bisa juga filter dulu misal yg ratingnya > 4.5, atau yang harganya murah ($-nya satu), bebas lah.
     5. Copy semua hasilnya dengan block semua text dari tempat pertama sampai selesai, biarkan dia scroll down terus sampe habis.
     6. Paste di kolom Place Data dibawah.
     7. Tunggu hasilnya akan berupa image yang siap kamu download.
