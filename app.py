@@ -9,21 +9,17 @@ from playwright.sync_api import sync_playwright
 import math
 import zipfile
 import json
-
 def create_scatter_plot_html(places, title):
     if not places:
         return "<p>No data available for scatter plot</p>"
-
     # Calculate dynamic scales
     min_reviews = min(place['reviews'] for place in places)
     max_reviews = max(place['reviews'] for place in places)
     min_rating = min(place['rating'] for place in places)
     max_rating = max(place['rating'] for place in places)
-
     # Add some padding to the scales
     reviews_padding = (max_reviews - min_reviews) * 0.1
     rating_padding = (max_rating - min_rating) * 0.1
-
     x_min = max(0, min_reviews - reviews_padding)
     x_max = max_reviews + reviews_padding
     y_min = max(0, min_rating - rating_padding)
@@ -81,7 +77,6 @@ def create_scatter_plot_html(places, title):
     </body>
     </html>
     '''
-
     scatter_data = {
         'x': [place['reviews'] for place in places],
         'y': [place['rating'] for place in places],
@@ -92,7 +87,6 @@ def create_scatter_plot_html(places, title):
         'marker': { 'size': 10 },
         'textfont': { 'size': 10 }
     }
-
     return html_template.format(
         title=title,
         data=json.dumps([scatter_data]),
@@ -101,7 +95,6 @@ def create_scatter_plot_html(places, title):
         y_min=y_min,
         y_max=y_max
     )
-
     return html_template.format(
         title=title,
         data=json.dumps([scatter_data]),
@@ -120,7 +113,6 @@ def install_chromium():
         st.error("Failed to install Chromium.")
         st.error(e.stderr)
         raise
-
 def parse_text(text):
     places = []
     pattern = r'(.*?)\n(\d+[,\.]\d+)\((\d+(?:\.\d+)?)\)(.*?)(?=\n\n|\Z)'
@@ -143,11 +135,9 @@ def parse_text(text):
         })
     
     return places
-
 def create_html(places, title):
     top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
     top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
-
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -224,10 +214,8 @@ def create_html(places, title):
             <div id="placesList"></div>
             <div class="footer">@TangerangSelatanSateLovers • Data akurat per Juli 2024</div>
         </div>
-
         <script>
             const places = {places_json};
-
             function createStarRating(rating, index) {{
                 let stars = '';
                 for (let i = 0; i < 5; i++) {{
@@ -246,7 +234,6 @@ def create_html(places, title):
                 }}
                 return stars;
             }}
-
             const placesList = document.getElementById('placesList');
             places.forEach((place, index) => {{
                 placesList.innerHTML += `
@@ -267,70 +254,63 @@ def create_html(places, title):
     </body>
     </html>
     '''
-
     return html_template.format(
         title=title,
         places_json=json.dumps(top_10)
     )
-
-def create_poster_html(places, place_type, area, width=600):
-    def create_star_svg(percentage):
-        return f'''
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="star-gradient">
-                    <stop offset="{percentage}%" stop-color="#F2C94C" />
-                    <stop offset="{percentage}%" stop-color="#E0E0E0" />
-                </linearGradient>
-            </defs>
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                  fill="url(#star-gradient)" stroke="#F2C94C" stroke-width="1" />
-        </svg>'''
-
-    shops_html = ""
-    for i, place in enumerate(places[:10], 1):
-        stars_html = ''.join([create_star_svg(max(0, min(100, (place['rating'] - i) * 100))) for i in range(5)])
-        shops_html += f'''
-        <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
-            <div class="flex justify-between items-center">
-                <span class="font-semibold text-lg text-gray-800">{i}. {place['name']}</span>
-                <div class="flex items-center">
-                    <div class="flex mr-2">{stars_html}</div>
-                    <span class="font-medium text-lg text-gray-800">{place['rating']:.1f}</span>
-                </div>
-            </div>
-            <div class="text-sm text-gray-600 mt-1">{place['reviews']:,} ratings</div>
-        </div>
-        '''
-
-    return f'''
+def create_poster_html(place_type, area):
+    html_template = '''
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.tailwindcss.com"></script>
+        <title>Poster</title>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-            body {{ font-family: 'Inter', sans-serif; }}
+            body {{
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: white;
+            }}
+            .poster-container {{
+                width: 600px;
+                height: 800px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }}
+            .title {{
+                font-size: 48px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #1F2937;
+            }}
+            .subtitle {{
+                font-size: 24px;
+                font-style: italic;
+                color: #6B7280;
+            }}
         </style>
     </head>
     <body>
-        <div class="poster-container bg-white" style="width: {width}px; height: {int(width * 1.4)}px;">
-            <div class="flex flex-col items-center justify-center h-full">
-                <div class="w-5/6 max-w-2xl">
-                    <h1 class="text-3xl font-bold mb-6 text-gray-900 text-center">Top 10 {place_type} di {area}</h1>
-                    <div class="space-y-4">
-                        {shops_html}
-                    </div>
-                    <div class="mt-6 text-sm text-gray-500 text-center">Data based on user ratings and reviews</div>
-                </div>
-            </div>
+        <div class="poster-container">
+            <h1 class="title">{place_type} terbaik<br>di {area}</h1>
+            <p class="subtitle">Menurut google reviews</p>
         </div>
     </body>
     </html>
     '''
-
+    return html_template.format(place_type=place_type, area=area)
 def create_poster_image(place_type, area):
     html_content = create_poster_html(place_type, area)
     
@@ -350,7 +330,6 @@ def create_poster_image(place_type, area):
     image = Image.open(io.BytesIO(screenshot))
     
     return image
-
 def html_to_image_top10(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -392,7 +371,6 @@ def html_to_image_top10(html_content):
         browser.close()
         
         return screenshot, bounding_box['height']
-
 def html_to_image(html_content):
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -407,7 +385,6 @@ def html_to_image(html_content):
         browser.close()
         
         return screenshot
-
 def create_final_poster_html():
     html_template = '''
     <!DOCTYPE html>
@@ -454,6 +431,7 @@ def create_final_poster_html():
     </head>
     <body>
         <div class="poster-container">
+            <h1 class="title"><br><br><br><br><br><br><br><br><br>Komen dibawah, spot apa lagi yang harus di-ranking?</h1>
             <h1 class="title"><br><br><br><br><br><br><br><br>Komen dibawah, spot apa lagi yang harus di-ranking?</h1>
             <p class="subtitle"></p>
         </div>
@@ -461,7 +439,6 @@ def create_final_poster_html():
     </html>
     '''
     return html_template
-
 def create_final_poster_image():
     html_content = create_final_poster_html()
     
@@ -484,9 +461,7 @@ def create_final_poster_image():
     
 def main():
     install_chromium()
-
     st.title("Top 10 Places Generator")
-
     st.header("Cara Kerja:")
     st.write("""1. Cari tempat yang ingin kamu extract top 10-nya di google maps. Buka google maps.
     2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
@@ -496,40 +471,24 @@ def main():
     6. Paste di kolom Place Data dibawah.
     7. Tunggu hasilnya akan berupa image yang siap kamu download.
     """)
-
     area = st.text_input("Enter the area name (untuk judul posternya nanti):")
     place_type = st.text_input("Enter the type of place (untuk judul juga):")
     text_input = st.text_area("Enter the place data (untuk diparsing dan dibuatkan poster):", height=300)
-
     if st.button("Generate Images"):
         if area and place_type and text_input:
             places = parse_text(text_input)
             
-            # Log data that was processed
+            # Log data yang diproses
             st.write("Processed data:")
             st.write(places)
             
             if not places:
                 st.error("No valid data found. Please check your input.")
                 return
-
-            # Create poster HTML
-            poster_html = create_poster_html(places, place_type, area)
-
-            # Convert HTML to image
-            with st.spinner("Generating poster image..."):
-                try:
-                    poster_image = html_to_image(poster_html)
-                    if poster_image is not None:
-                        st.success("Poster image generated successfully!")
-                        st.image(poster_image, caption="Top 10 Poster", use_column_width=True)
-                    else:
-                        st.warning("Failed to generate the poster image. You can still use the HTML version.")
-                        st.components.v1.html(poster_html, height=800, scrolling=True)
-                except Exception as e:
-                    st.error(f"An error occurred while generating the image: {str(e)}")
-                    st.info("You can still use the HTML version.")
-                    st.components.v1.html(poster_html, height=800, scrolling=True)
+            html_output = create_html(places, f"Top 10 {place_type} in {area}")
+            # Create and display poster image
+            poster_image = create_poster_image(place_type, area)
+            st.image(poster_image, caption="Poster", use_column_width=True)
             
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
@@ -537,12 +496,10 @@ def main():
             st.info("The image above shows the top 10 places.")
             
             
-
             # # Create scatter plot
             # scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
             # scatter_image = html_to_image(scatter_html)
             # st.image(scatter_image, caption="Scatter Plot", use_column_width=True)
-
             # Convert HTML to image
             with st.spinner("Generating Top 10 image..."):
                 try:
@@ -555,7 +512,6 @@ def main():
                 except Exception as e:
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
-
             # Display the final poster
             final_poster_image = create_final_poster_image()
             st.image(final_poster_image, caption="Final Poster", use_column_width=True)
@@ -585,9 +541,7 @@ def main():
                     file_name=f"top_10_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
-
             
             
-
 if __name__ == "__main__":
     main()
