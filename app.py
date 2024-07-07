@@ -250,12 +250,23 @@ def parse_text(text):
         if match[3].strip():
             address_lines = match[3].strip().split('\n')
             if address_lines:
-                first_line = address_lines[0]
-                last_dot_index = first_line.rfind('· ')
-                if last_dot_index != -1 and last_dot_index + 2 < len(first_line):
-                    address = first_line[last_dot_index + 2:].strip()
+                if '· $$' in address_lines[0]:
+                    # Handle case with '· $$'
+                    if len(address_lines) > 1:
+                        second_line = address_lines[1]
+                        last_dot_index = second_line.rfind('· ')
+                        if last_dot_index != -1 and last_dot_index + 2 < len(second_line):
+                            address = second_line[last_dot_index + 2:].strip()
+                        else:
+                            address = second_line.strip()
                 else:
-                    address = first_line.strip()
+                    # Handle case without '· $$'
+                    first_line = address_lines[0]
+                    last_dot_index = first_line.rfind('· ')
+                    if last_dot_index != -1 and last_dot_index + 2 < len(first_line):
+                        address = first_line[last_dot_index + 2:].strip()
+                    else:
+                        address = first_line.strip()
         
         places.append({
             'name': name,
