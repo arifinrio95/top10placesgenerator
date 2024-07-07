@@ -539,18 +539,20 @@ def create_final_poster_image():
     
 def main():
     install_chromium()
-    st.title("Top 10 Places Generator")
+    st.title("Top Places Generator")
     st.header("Cara Kerja:")
-    st.write("""1. Cari tempat yang ingin kamu extract top 10-nya di google maps. Buka google maps.
-    2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
-    3. Klik pada opsi menu "Di Sekitar" atau "Nearby" jika settinganmu bahasa Enggres.
-    4. Ketik nama tempat yang ingin kamu extract. Kamu bisa juga filter dulu misal yg ratingnya > 4.5, atau yang harganya murah ($-nya satu), bebas lah.
-    5. Copy semua hasilnya dengan block semua text dari tempat pertama sampai selesai, biarkan dia scroll down terus sampe habis.
-    6. Paste di kolom Place Data dibawah.
-    7. Tunggu hasilnya akan berupa image yang siap kamu download.
+    st.write("""1. Cari tempat yang ingin kamu extract top-nya di google maps. Buka google maps.
+    \n2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
+    \n3. Klik pada opsi menu "Di Sekitar" atau "Nearby" jika settinganmu bahasa Enggres.
+    \n4. Ketik nama tempat yang ingin kamu extract. Kamu bisa juga filter dulu misal yg ratingnya > 4.5, atau yang harganya murah ($-nya satu), bebas lah.
+    \n5. Copy semua hasilnya dengan block semua text dari tempat pertama sampai selesai, biarkan dia scroll down terus sampe habis.
+    \n6. Paste di kolom Place Data dibawah.
+    \n7. Tunggu hasilnya akan berupa image yang siap kamu download.
     """)
     area = st.text_input("Enter the area name (untuk judul posternya nanti):")
     place_type = st.text_input("Enter the type of place (untuk judul juga):")
+    top_n = st.radio("Choose the number of top places:", ("5", "10"))
+    top_n = int(top_n)
     text_input = st.text_area("Enter the place data (untuk diparsing dan dibuatkan poster):", height=300)
     if st.button("Generate Images"):
         if area and place_type and text_input:
@@ -564,27 +566,27 @@ def main():
                 st.error("No valid data found. Please check your input.")
                 return
             
-            # Update this line to include area and place_type
-            html_output = create_html(places, f"Top 10 {place_type} in {area}", area, place_type)
+            # Update this line to include top_n
+            html_output = create_html(places, f"Top {top_n} {place_type} in {area}", area, place_type, top_n)
             
             # Create and display poster image
-            poster_image = create_poster_image(place_type, area)
+            poster_image = create_poster_image(place_type, area, top_n)
             st.image(poster_image, caption="Poster", use_column_width=True)
             
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
-            st.markdown("### Top 10 Places")
-            st.info("The image above shows the top 10 places.")
+            st.markdown(f"### Top {top_n} Places")
+            st.info(f"The image above shows the top {top_n} places.")
             
             # Convert HTML to image
-            with st.spinner("Generating Top 10 image..."):
+            with st.spinner(f"Generating Top {top_n} image..."):
                 try:
                     html_image, html_height = html_to_image_top10(html_output)
                     
                     if html_image is not None:
-                        st.success(f"Top 10 image generated successfully!")
+                        st.success(f"Top {top_n} image generated successfully!")
                     else:
-                        st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
+                        st.warning(f"Failed to generate the Top {top_n} image. You can still use the HTML version above.")
                 except Exception as e:
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
@@ -602,7 +604,7 @@ def main():
                     poster_bytes = poster_bytes.getvalue()
         
                     zip_file.writestr("poster.png", poster_bytes)
-                    zip_file.writestr("top_10.png", html_image)
+                    zip_file.writestr(f"top_{top_n}.png", html_image)
                     
                     # Add the new final poster
                     final_poster_bytes = io.BytesIO()
@@ -614,7 +616,7 @@ def main():
                 st.download_button(
                     label="Download All Images",
                     data=zip_buffer.getvalue(),
-                    file_name=f"top_10_{place_type}_{area}_images.zip",
+                    file_name=f"top_{top_n}_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
             
