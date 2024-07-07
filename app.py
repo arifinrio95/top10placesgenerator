@@ -273,59 +273,63 @@ def create_html(places, title):
         places_json=json.dumps(top_10)
     )
 
-def create_poster_html(place_type, area):
-    html_template = '''
+def create_poster_html(places, place_type, area, width=600):
+    def create_star_svg(percentage):
+        return f'''
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="star-gradient">
+                    <stop offset="{percentage}%" stop-color="#F2C94C" />
+                    <stop offset="{percentage}%" stop-color="#E0E0E0" />
+                </linearGradient>
+            </defs>
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                  fill="url(#star-gradient)" stroke="#F2C94C" stroke-width="1" />
+        </svg>'''
+
+    shops_html = ""
+    for i, place in enumerate(places[:10], 1):
+        stars_html = ''.join([create_star_svg(max(0, min(100, (place['rating'] - i) * 100))) for i in range(5)])
+        shops_html += f'''
+        <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-4">
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-lg text-gray-800">{i}. {place['name']}</span>
+                <div class="flex items-center">
+                    <div class="flex mr-2">{stars_html}</div>
+                    <span class="font-medium text-lg text-gray-800">{place['rating']:.1f}</span>
+                </div>
+            </div>
+            <div class="text-sm text-gray-600 mt-1">{place['reviews']:,} ratings</div>
+        </div>
+        '''
+
+    return f'''
     <!DOCTYPE html>
-    <html lang="en">
+    <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Poster</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-            body {{
-                font-family: 'Inter', sans-serif;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                background-color: white;
-            }}
-            .poster-container {{
-                width: 600px;
-                height: 800px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-                padding: 20px;
-                box-sizing: border-box;
-            }}
-            .title {{
-                font-size: 48px;
-                font-weight: bold;
-                margin-bottom: 20px;
-                color: #1F2937;
-            }}
-            .subtitle {{
-                font-size: 24px;
-                font-style: italic;
-                color: #6B7280;
-            }}
+            body {{ font-family: 'Inter', sans-serif; }}
         </style>
     </head>
     <body>
-        <div class="poster-container">
-            <h1 class="title">{place_type} terbaik<br>di {area}</h1>
-            <p class="subtitle">Menurut google reviews</p>
+        <div class="poster-container bg-white" style="width: {width}px; height: {int(width * 1.4)}px;">
+            <div class="flex flex-col items-center justify-center h-full">
+                <div class="w-5/6 max-w-2xl">
+                    <h1 class="text-3xl font-bold mb-6 text-gray-900 text-center">Top 10 {place_type} di {area}</h1>
+                    <div class="space-y-4">
+                        {shops_html}
+                    </div>
+                    <div class="mt-6 text-sm text-gray-500 text-center">Data based on user ratings and reviews</div>
+                </div>
+            </div>
         </div>
     </body>
     </html>
     '''
-    return html_template.format(place_type=place_type, area=area)
 
 def create_poster_image(place_type, area):
     html_content = create_poster_html(place_type, area)
@@ -501,7 +505,7 @@ def main():
         if area and place_type and text_input:
             places = parse_text(text_input)
             
-            # Log data yang diproses
+            # Log data that was processed
             st.write("Processed data:")
             st.write(places)
             
@@ -509,13 +513,23 @@ def main():
                 st.error("No valid data found. Please check your input.")
                 return
 
-            html_output = create_html(places, f"Top 10 {place_type} in {area}")
+            # Create poster HTML
+            poster_html = create_poster_html(places, place_type, area)
 
-
-            # Create and display poster image
-            poster_image = create_poster_image(place_type, area)
-            st.image(poster_image, caption="Poster", use_column_width=True)
-
+            # Convert HTML to image
+            with st.spinner("Generating poster image..."):
+                try:
+                    poster_image = html_to_image(poster_html)
+                    if poster_image is not None:
+                        st.success("Poster image generated successfully!")
+                        st.image(poster_image, caption="Top 10 Poster", use_column_width=True)
+                    else:
+                        st.warning("Failed to generate the poster image. You can still use the HTML version.")
+                        st.components.v1.html(poster_html, height=800, scrolling=True)
+                except Exception as e:
+                    st.error(f"An error occurred while generating the image: {str(e)}")
+                    st.info("You can still use the HTML version.")
+                    st.components.v1.html(poster_html, height=800, scrolling=True)
             
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
