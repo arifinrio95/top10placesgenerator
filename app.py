@@ -107,6 +107,10 @@ def create_scatter_plot_html(places, title):
 def create_html(places, title):
     top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
     top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
+    
+    # Find the place with the most reviews
+    most_reviews = max(top_10, key=lambda x: x['reviews'])['reviews']
+    
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -143,9 +147,11 @@ def create_html(places, title):
                 margin-bottom: 15px;
                 display: flex;
                 justify-content: space-between;
+                position: relative;
             }}
             .place-info {{
                 flex-grow: 1;
+                padding-right: 10px;
             }}
             .place-name {{
                 font-size: 16px;
@@ -184,6 +190,23 @@ def create_html(places, title):
                 font-size: 10px;
                 margin-top: 10px;
             }}
+            .label {{
+                position: absolute;
+                top: -10px;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: bold;
+                color: white;
+            }}
+            .perfect {{
+                background-color: #10B981;
+                left: 10px;
+            }}
+            .favorite {{
+                background-color: #3B82F6;
+                right: 10px;
+            }}
         </style>
     </head>
     <body>
@@ -194,13 +217,24 @@ def create_html(places, title):
         </div>
         <script>
             const places = {places_json};
+            const mostReviews = {most_reviews};
             function createStarRating(rating) {{
                 return '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
             }}
             const placesList = document.getElementById('placesList');
             places.forEach((place, index) => {{
+                const isPerfect = place.rating === 5;
+                const isMostFavorite = place.reviews === mostReviews;
+                let labels = '';
+                if (isPerfect) {{
+                    labels += '<span class="label perfect">Perfect!</span>';
+                }}
+                if (isMostFavorite) {{
+                    labels += '<span class="label favorite">Most Favorite!</span>';
+                }}
                 placesList.innerHTML += `
                     <div class="place">
+                        ${{labels}}
                         <div class="place-info">
                             <div class="place-name">${{index + 1}}. ${{place.name}}</div>
                             <div class="address"><i class="fas fa-map-marker-alt"></i> ${{place.address}}</div>
@@ -219,7 +253,8 @@ def create_html(places, title):
     '''
     return html_template.format(
         title=title,
-        places_json=json.dumps(top_10)
+        places_json=json.dumps(top_10),
+        most_reviews=most_reviews
     )
     
 def install_chromium():
