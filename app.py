@@ -124,8 +124,18 @@ def parse_text(text):
         rating = float(match[1].replace(',', '.'))
         reviews = int(float(match[2].replace('.', '')))
         
-        address_match = re.search(r'(Jl\.?|Jalan|[Rr]uko).*', match[3])
-        address = address_match.group(0) if address_match else ""
+        # New address extraction logic
+        address = ""
+        if match[3].strip():
+            address_lines = match[3].strip().split('\n')
+            for line in address_lines:
+                if any(keyword in line.lower() for keyword in ["jl", "jalan", "ruko"]):
+                    address = line.strip()
+                    break
+            if not address and len(address_lines) > 0:
+                last_dot_index = address_lines[0].rfind('·')
+                if last_dot_index != -1:
+                    address = address_lines[0][last_dot_index+1:].strip()
         
         places.append({
             'name': name,
@@ -135,125 +145,6 @@ def parse_text(text):
         })
     
     return places
-def create_html(places, title):
-    top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
-    top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
-    html_template = '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{title}</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-            body {{
-                font-family: 'Inter', sans-serif;
-                margin: 0;
-                padding: 20px;
-                box-sizing: border-box;
-                background-color: #ffffff;
-            }}
-            .container {{
-                width: 100%;
-                max-width: 600px;
-                margin: 0 auto;
-                box-sizing: border-box;
-            }}
-            h1 {{
-                text-align: center;
-                color: #1F2937;
-                margin-bottom: 20px;
-                font-size: 24px;
-            }}
-            .place {{
-                background-color: #F3F4F6;
-                border-radius: 8px;
-                padding: 15px;
-                margin-bottom: 15px;
-            }}
-            .place-name {{
-                font-size: 16px;
-                font-weight: bold;
-                color: #1F2937;
-            }}
-            .address {{
-                color: #6B7280;
-                font-size: 12px;
-                margin: 5px 0;
-            }}
-            .rating {{
-                display: flex;
-                align-items: center;
-            }}
-            .stars {{
-                display: flex;
-                align-items: center;
-            }}
-            .reviews {{
-                color: #6B7280;
-                font-size: 12px;
-                margin-left: 10px;
-            }}
-            .footer {{
-                text-align: center;
-                color: #6B7280;
-                font-size: 10px;
-                margin-top: 10px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>{title}</h1>
-            <div id="placesList"></div>
-            <div class="footer">@TangerangSelatanSateLovers • Data akurat per Juli 2024</div>
-        </div>
-        <script>
-            const places = {places_json};
-            function createStarRating(rating, index) {{
-                let stars = '';
-                for (let i = 0; i < 5; i++) {{
-                    const percentage = Math.max(0, Math.min(100, (rating - i) * 100));
-                    stars += `
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="star-${{index}}-${{i}}">
-                                    <stop offset="${{percentage}}%" stop-color="#F2C94C" />
-                                    <stop offset="${{percentage}}%" stop-color="#E0E0E0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                                  fill="url(#star-${{index}}-${{i}})" stroke="#F2C94C" stroke-width="1" />
-                        </svg>`;
-                }}
-                return stars;
-            }}
-            const placesList = document.getElementById('placesList');
-            places.forEach((place, index) => {{
-                placesList.innerHTML += `
-                    <div class="place">
-                        <div class="place-name">${{index + 1}}. ${{place.name}}</div>
-                        <div class="address"><i class="fas fa-map-marker-alt"></i> ${{place.address}}</div>
-                        <div class="rating">
-                            <div class="stars">
-                                ${{createStarRating(place.rating, index)}}
-                                <span style="margin-left: 5px;">${{place.rating.toFixed(1)}}</span>
-                            </div>
-                            <span class="reviews">(${{place.reviews}} reviews)</span>
-                        </div>
-                    </div>
-                `;
-            }});
-        </script>
-    </body>
-    </html>
-    '''
-    return html_template.format(
-        title=title,
-        places_json=json.dumps(top_10)
-    )
     
 def create_poster_html(place_type, area):
     html_template = '''
