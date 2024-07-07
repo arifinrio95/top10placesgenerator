@@ -276,15 +276,16 @@ def parse_text(text):
         lines = match[0].strip().split('\n')
         name = lines[-1] if lines else ""
         rating = float(match[1].replace(',', '.'))
-        reviews = int(float(match[2].replace('.', '')))
+        reviews = int(float(match[2].replace('.', '').replace(',', '')))
         
-        # Corrected address extraction logic
+        # Improved address extraction logic
         address = ""
         if match[3].strip():
             address_lines = match[3].strip().split('\n')
             if address_lines:
-                if '· $$' in address_lines[0]:
-                    # Handle case with '· $$'
+                first_line = address_lines[0]
+                if '· $' in first_line or '· $$' in first_line or '· $$$' in first_line:
+                    # Handle case with price indicators
                     if len(address_lines) > 1:
                         second_line = address_lines[1]
                         last_dot_index = second_line.rfind('· ')
@@ -293,8 +294,7 @@ def parse_text(text):
                         else:
                             address = second_line.strip()
                 else:
-                    # Handle case without '· $$'
-                    first_line = address_lines[0]
+                    # Handle case without price indicators
                     last_dot_index = first_line.rfind('· ')
                     if last_dot_index != -1 and last_dot_index + 2 < len(first_line):
                         address = first_line[last_dot_index + 2:].strip()
