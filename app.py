@@ -104,7 +104,7 @@ def create_scatter_plot_html(places, title):
         y_max=y_max
     )
 
-def create_html(places, title):
+def create_html(places, title, area, place_type):
     top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
     top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
     
@@ -214,7 +214,7 @@ def create_html(places, title):
         <div class="container">
             <h1>{title}</h1>
             <div id="placesList"></div>
-            <div class="footer">@TangerangSelatanSateLovers • Data akurat per Juli 2024</div>
+            <div class="footer">@{area}{place_type}Lovers • Data akurat per Juli 2024</div>
         </div>
         <script>
             const places = {places_json};
@@ -260,7 +260,9 @@ def create_html(places, title):
         title=title,
         places_json=json.dumps(top_10),
         most_reviews=most_reviews,
-        highest_rating=highest_rating
+        highest_rating=highest_rating,
+        area=area,
+        place_type=place_type
     )
     
 def install_chromium():
