@@ -336,7 +336,7 @@ def parse_text(text):
     
     return places
     
-def create_poster_html(place_type, area):
+def create_poster_html(place_type, area, top_n):
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -382,15 +382,16 @@ def create_poster_html(place_type, area):
     </head>
     <body>
         <div class="poster-container">
-            <h1 class="title">{place_type} terbaik<br>di {area}</h1>
+            <h1 class="title">Top {top_n} {place_type} terbaik<br>di {area}</h1>
             <p class="subtitle">Menurut google reviews</p>
         </div>
     </body>
     </html>
     '''
-    return html_template.format(place_type=place_type, area=area)
-def create_poster_image(place_type, area):
-    html_content = create_poster_html(place_type, area)
+    return html_template.format(place_type=place_type, area=area, top_n=top_n)
+
+def create_poster_image(place_type, area, top_n):
+    html_content = create_poster_html(place_type, area, top_n)
     
     with sync_playwright() as p:
         browser = p.chromium.launch()
