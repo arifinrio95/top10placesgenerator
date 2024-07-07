@@ -108,8 +108,9 @@ def create_html(places, title):
     top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
     top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
     
-    # Find the place with the most reviews
+    # Find the place with the most reviews and highest rating
     most_reviews = max(top_10, key=lambda x: x['reviews'])['reviews']
+    highest_rating = max(top_10, key=lambda x: x['rating'])['rating']
     
     html_template = '''
     <!DOCTYPE html>
@@ -199,7 +200,7 @@ def create_html(places, title):
                 font-weight: bold;
                 color: white;
             }}
-            .perfect {{
+            .perfect, .highest-rating {{
                 background-color: #10B981;
                 left: 10px;
             }}
@@ -218,16 +219,20 @@ def create_html(places, title):
         <script>
             const places = {places_json};
             const mostReviews = {most_reviews};
+            const highestRating = {highest_rating};
             function createStarRating(rating) {{
                 return '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
             }}
             const placesList = document.getElementById('placesList');
             places.forEach((place, index) => {{
                 const isPerfect = place.rating === 5;
+                const isHighestRating = place.rating === highestRating && !isPerfect;
                 const isMostFavorite = place.reviews === mostReviews;
                 let labels = '';
                 if (isPerfect) {{
                     labels += '<span class="label perfect">Perfect!</span>';
+                }} else if (isHighestRating) {{
+                    labels += '<span class="label highest-rating">Highest Rating!</span>';
                 }}
                 if (isMostFavorite) {{
                     labels += '<span class="label favorite">Most Favorite!</span>';
@@ -254,7 +259,8 @@ def create_html(places, title):
     return html_template.format(
         title=title,
         places_json=json.dumps(top_10),
-        most_reviews=most_reviews
+        most_reviews=most_reviews,
+        highest_rating=highest_rating
     )
     
 def install_chromium():
