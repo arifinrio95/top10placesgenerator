@@ -141,29 +141,42 @@ def create_html(places, title):
                 border-radius: 8px;
                 padding: 15px;
                 margin-bottom: 15px;
+                display: flex;
+                justify-content: space-between;
+            }}
+            .place-info {{
+                flex-grow: 1;
             }}
             .place-name {{
                 font-size: 16px;
                 font-weight: bold;
                 color: #1F2937;
+                margin-bottom: 5px;
             }}
             .address {{
                 color: #6B7280;
                 font-size: 12px;
-                margin: 5px 0;
+                margin-bottom: 5px;
+            }}
+            .rating-info {{
+                text-align: right;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: flex-end;
             }}
             .rating {{
-                display: flex;
-                align-items: center;
-            }}
-            .stars {{
-                display: flex;
-                align-items: center;
+                font-size: 24px;
+                font-weight: bold;
+                color: #1F2937;
             }}
             .reviews {{
                 color: #6B7280;
                 font-size: 12px;
-                margin-left: 10px;
+            }}
+            .stars {{
+                color: #F59E0B;
+                font-size: 16px;
             }}
             .footer {{
                 text-align: center;
@@ -181,36 +194,21 @@ def create_html(places, title):
         </div>
         <script>
             const places = {places_json};
-            function createStarRating(rating, index) {{
-                let stars = '';
-                for (let i = 0; i < 5; i++) {{
-                    const percentage = Math.max(0, Math.min(100, (rating - i) * 100));
-                    stars += `
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="star-${{index}}-${{i}}">
-                                    <stop offset="${{percentage}}%" stop-color="#F2C94C" />
-                                    <stop offset="${{percentage}}%" stop-color="#E0E0E0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                                  fill="url(#star-${{index}}-${{i}})" stroke="#F2C94C" stroke-width="1" />
-                        </svg>`;
-                }}
-                return stars;
+            function createStarRating(rating) {{
+                return '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
             }}
             const placesList = document.getElementById('placesList');
             places.forEach((place, index) => {{
                 placesList.innerHTML += `
                     <div class="place">
-                        <div class="place-name">${{index + 1}}. ${{place.name}}</div>
-                        <div class="address"><i class="fas fa-map-marker-alt"></i> ${{place.address}}</div>
-                        <div class="rating">
-                            <div class="stars">
-                                ${{createStarRating(place.rating, index)}}
-                                <span style="margin-left: 5px;">${{place.rating.toFixed(1)}}</span>
-                            </div>
-                            <span class="reviews">(${{place.reviews}} reviews)</span>
+                        <div class="place-info">
+                            <div class="place-name">${{index + 1}}. ${{place.name}}</div>
+                            <div class="address"><i class="fas fa-map-marker-alt"></i> ${{place.address}}</div>
+                        </div>
+                        <div class="rating-info">
+                            <div class="rating">${{place.rating.toFixed(1)}}</div>
+                            <div class="stars">${{createStarRating(place.rating)}}</div>
+                            <div class="reviews">dari ${{place.reviews}} reviews</div>
                         </div>
                     </div>
                 `;
