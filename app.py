@@ -151,7 +151,7 @@ def create_html(places, title):
             body {{
                 font-family: 'Inter', sans-serif;
                 margin: 0;
-                padding: 0;
+                padding: 20px;
                 box-sizing: border-box;
                 background-color: #ffffff;
             }}
@@ -159,10 +159,7 @@ def create_html(places, title):
                 width: 100%;
                 max-width: 600px;
                 margin: 0 auto;
-                padding: 20px;
                 box-sizing: border-box;
-                border: 1px solid #E5E7EB;
-                background-color: #ffffff;
             }}
             h1 {{
                 text-align: center;
@@ -171,81 +168,56 @@ def create_html(places, title):
                 font-size: 24px;
             }}
             .place {{
-                border-bottom: 1px solid #E5E7EB;
-                padding: 10px 0;
-            }}
-            .place:last-child {{
-                border-bottom: none;
+                background-color: #F3F4F6;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 15px;
             }}
             .place-name {{
-                font-size: 16px;
+                font-size: 18px;
                 font-weight: bold;
                 color: #1F2937;
+                margin-bottom: 5px;
             }}
-            .address {{
+            .ratings {{
+                font-size: 14px;
                 color: #6B7280;
-                font-size: 12px;
-                margin: 5px 0;
-            }}
-            .rating {{
-                display: flex;
-                align-items: center;
             }}
             .stars {{
-                display: flex;
-                align-items: center;
-            }}
-            .reviews {{
-                color: #6B7280;
-                font-size: 12px;
-                margin-left: 10px;
+                color: #F59E0B;
+                margin-right: 5px;
             }}
             .footer {{
                 text-align: center;
                 color: #6B7280;
-                font-size: 10px;
-                margin-top: 10px;
+                font-size: 12px;
+                margin-top: 20px;
             }}
         </style>
     </head>
     <body>
-        <div class="container poster-container">
+        <div class="container">
             <h1>{title}</h1>
             <div id="placesList"></div>
-            <div class="footer">@TangerangSelatanSateLovers • Data akurat per Juli 2024</div>
+            <div class="footer">Data based on user ratings and reviews</div>
         </div>
         <script>
             const places = {places_json};
-            function createStarRating(rating, index) {{
-                let stars = '';
-                for (let i = 0; i < 5; i++) {{
-                    const percentage = Math.max(0, Math.min(100, (rating - i) * 100));
-                    stars += `
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="star-${{index}}-${{i}}">
-                                    <stop offset="${{percentage}}%" stop-color="#F2C94C" />
-                                    <stop offset="${{percentage}}%" stop-color="#E0E0E0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                                  fill="url(#star-${{index}}-${{i}})" stroke="#F2C94C" stroke-width="1" />
-                        </svg>`;
-                }}
-                return stars;
+            function createStarRating(rating) {{
+                const fullStars = Math.floor(rating);
+                const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+                const emptyStars = 5 - fullStars - halfStar;
+                return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
             }}
             const placesList = document.getElementById('placesList');
             places.forEach((place, index) => {{
                 placesList.innerHTML += `
                     <div class="place">
                         <div class="place-name">${{index + 1}}. ${{place.name}}</div>
-                        <div class="address"><i class="fas fa-map-marker-alt"></i> ${{place.address}}</div>
-                        <div class="rating">
-                            <div class="stars">
-                                ${{createStarRating(place.rating, index)}}
-                                <span style="margin-left: 5px;">${{place.rating.toFixed(1)}}</span>
-                            </div>
-                            <span class="reviews">(${{place.reviews}} reviews)</span>
+                        <div class="ratings">
+                            <span class="stars">${{createStarRating(place.rating)}}</span>
+                            ${{place.rating.toFixed(1)}}
+                            <span style="margin-left: 10px;">${{place.reviews}} ratings</span>
                         </div>
                     </div>
                 `;
@@ -258,6 +230,7 @@ def create_html(places, title):
         title=title,
         places_json=json.dumps(top_10)
     )
+    
 def create_poster_html(place_type, area):
     html_template = '''
     <!DOCTYPE html>
