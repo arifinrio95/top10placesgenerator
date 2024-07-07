@@ -105,12 +105,12 @@ def create_scatter_plot_html(places, title):
     )
 
 def create_html(places, title, area, place_type):
-    top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
-    top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
+    top_5 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:5]
+    top_5 = sorted(top_5, key=lambda x: x['rating'], reverse=True)
     
     # Find the place with the most reviews and highest rating
-    most_reviews = max(top_10, key=lambda x: x['reviews'])['reviews']
-    highest_rating = max(top_10, key=lambda x: x['rating'])['rating']
+    most_reviews = max(top_5, key=lambda x: x['reviews'])['reviews']
+    highest_rating = max(top_5, key=lambda x: x['rating'])['rating']
     
     # Remove spaces from area and place_type for the footer
     footer_area = area.replace(" ", "")
@@ -262,7 +262,7 @@ def create_html(places, title, area, place_type):
     '''
     return html_template.format(
         title=title,
-        places_json=json.dumps(top_10),
+        places_json=json.dumps(top_5),
         most_reviews=most_reviews,
         highest_rating=highest_rating,
         footer_area=footer_area,
@@ -368,13 +368,14 @@ def create_poster_html(place_type, area):
     </head>
     <body>
         <div class="poster-container">
-            <h1 class="title">{place_type} terbaik<br>di {area}</h1>
+            <h1 class="title">Top 5 {place_type} terbaik<br>di {area}</h1>
             <p class="subtitle">Menurut google reviews</p>
         </div>
     </body>
     </html>
     '''
     return html_template.format(place_type=place_type, area=area)
+    
 def create_poster_image(place_type, area):
     html_content = create_poster_html(place_type, area)
     
@@ -524,9 +525,9 @@ def create_final_poster_image():
     
 def main():
     install_chromium()
-    st.title("Top 10 Places Generator")
+    st.title("Top 5 Places Generator")
     st.header("Cara Kerja:")
-    st.write("""1. Cari tempat yang ingin kamu extract top 10-nya di google maps. Buka google maps.
+    st.write("""1. Cari tempat yang ingin kamu extract top 5-nya di google maps. Buka google maps.
     2. Ketik nama Area-nya misal "Bandung", "Bintaro", dsb. Nama tempat harus yang berupa area, contoh tidak bisa "BSD" karena "BSD" bukan nama area resmi, bisanya "Serpong".
     3. Klik pada opsi menu "Di Sekitar" atau "Nearby" jika settinganmu bahasa Enggres.
     4. Ketik nama tempat yang ingin kamu extract. Kamu bisa juga filter dulu misal yg ratingnya > 4.5, atau yang harganya murah ($-nya satu), bebas lah.
@@ -550,7 +551,7 @@ def main():
                 return
             
             # Update this line to include area and place_type
-            html_output = create_html(places, f"Top 10 {place_type} in {area}", area, place_type)
+            html_output = create_html(places, f"Top 5 {place_type} in {area}", area, place_type)
             
             # Create and display poster image
             poster_image = create_poster_image(place_type, area)
@@ -558,18 +559,18 @@ def main():
             
             # Display HTML content
             st.components.v1.html(html_output, height=800, scrolling=True)
-            st.markdown("### Top 10 Places")
-            st.info("The image above shows the top 10 places.")
+            st.markdown("### Top 5 Places")
+            st.info("The image above shows the top 5 places.")
             
             # Convert HTML to image
-            with st.spinner("Generating Top 10 image..."):
+            with st.spinner("Generating Top 5 image..."):
                 try:
                     html_image, html_height = html_to_image_top10(html_output)
                     
                     if html_image is not None:
-                        st.success(f"Top 10 image generated successfully!")
+                        st.success(f"Top 5 image generated successfully!")
                     else:
-                        st.warning("Failed to generate the Top 10 image. You can still use the HTML version above.")
+                        st.warning("Failed to generate the Top 5 image. You can still use the HTML version above.")
                 except Exception as e:
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
@@ -587,7 +588,7 @@ def main():
                     poster_bytes = poster_bytes.getvalue()
         
                     zip_file.writestr("poster.png", poster_bytes)
-                    zip_file.writestr("top_10.png", html_image)
+                    zip_file.writestr("top_5.png", html_image)
                     
                     # Add the new final poster
                     final_poster_bytes = io.BytesIO()
@@ -599,7 +600,7 @@ def main():
                 st.download_button(
                     label="Download All Images",
                     data=zip_buffer.getvalue(),
-                    file_name=f"top_10_{place_type}_{area}_images.zip",
+                    file_name=f"top_5_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
             
