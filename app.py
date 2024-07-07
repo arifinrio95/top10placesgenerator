@@ -233,6 +233,7 @@ def install_chromium():
         st.error("Failed to install Chromium.")
         st.error(e.stderr)
         raise
+
 def parse_text(text):
     places = []
     pattern = r'(.*?)\n(\d+[,\.]\d+)\((\d+(?:\.\d+)?)\)(.*?)(?=\n\n|\Z)'
