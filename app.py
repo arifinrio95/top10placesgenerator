@@ -103,13 +103,13 @@ def create_scatter_plot_html(places, title):
         y_min=y_min,
         y_max=y_max
     )
-def create_html(places, title, area, place_type):
-    top_10 = sorted(places, key=lambda x: x['reviews'], reverse=True)[:10]
-    top_10 = sorted(top_10, key=lambda x: x['rating'], reverse=True)
+def create_html(places, title, area, place_type, top_n):
+    top_places = sorted(places, key=lambda x: x['reviews'], reverse=True)[:top_n]
+    top_places = sorted(top_places, key=lambda x: x['rating'], reverse=True)
     
     # Find the place with the most reviews and highest rating
-    most_reviews = max(top_10, key=lambda x: x['reviews'])['reviews']
-    highest_rating = max(top_10, key=lambda x: x['rating'])['rating']
+    most_reviews = max(top_places, key=lambda x: x['reviews'])['reviews']
+    highest_rating = max(top_places, key=lambda x: x['rating'])['rating']
     
     # Remove spaces from area and place_type for the footer
     footer_area = area.replace(" ", "")
@@ -185,8 +185,8 @@ def create_html(places, title, area, place_type):
                 font-size: 12px;
             }}
             .stars {{
-                color: #F59E0B;
-                font-size: 16px;
+                display: flex;
+                align-items: center;
             }}
             .footer {{
                 text-align: center;
@@ -223,8 +223,23 @@ def create_html(places, title, area, place_type):
             const places = {places_json};
             const mostReviews = {most_reviews};
             const highestRating = {highest_rating};
-            function createStarRating(rating) {{
-                return '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+            function createStarRating(rating, index) {{
+                let stars = '';
+                for (let i = 0; i < 5; i++) {{
+                    const percentage = Math.max(0, Math.min(100, (rating - i) * 100));
+                    stars += `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="star-${{index}}-${{i}}">
+                                    <stop offset="${{percentage}}%" stop-color="#F59E0B" />
+                                    <stop offset="${{percentage}}%" stop-color="#E5E7EB" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                                  fill="url(#star-${{index}}-${{i}})" stroke="#F59E0B" stroke-width="1" />
+                        </svg>`;
+                }}
+                return stars;
             }}
             const placesList = document.getElementById('placesList');
             places.forEach((place, index) => {{
@@ -249,7 +264,7 @@ def create_html(places, title, area, place_type):
                         </div>
                         <div class="rating-info">
                             <div class="rating">${{place.rating.toFixed(1)}}</div>
-                            <div class="stars">${{createStarRating(place.rating)}}</div>
+                            <div class="stars">${{createStarRating(place.rating, index)}}</div>
                             <div class="reviews">dari ${{place.reviews}} reviews</div>
                         </div>
                     </div>
@@ -261,12 +276,13 @@ def create_html(places, title, area, place_type):
     '''
     return html_template.format(
         title=title,
-        places_json=json.dumps(top_10),
+        places_json=json.dumps(top_places),
         most_reviews=most_reviews,
         highest_rating=highest_rating,
         footer_area=footer_area,
         footer_place_type=footer_place_type
     )
+
     
 def install_chromium():
     try:
