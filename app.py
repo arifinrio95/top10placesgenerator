@@ -249,14 +249,20 @@ def parse_text(text):
         address = ""
         if match[3].strip():
             address_lines = match[3].strip().split('\n')
-            for line in address_lines:
-                if any(keyword in line.lower() for keyword in ["jl", "jalan", "ruko"]):
-                    address = line.strip()
-                    break
-            if not address and len(address_lines) > 0:
-                last_dot_index = address_lines[0].rfind('·')
-                if last_dot_index != -1:
-                    address = address_lines[0][last_dot_index+1:].strip()
+            if address_lines:
+                first_line = address_lines[0].lower()
+                keywords = ["jl", "jalan", "ruko"]
+                keyword_indices = [first_line.find(kw) for kw in keywords if kw in first_line]
+                
+                if keyword_indices:
+                    start_index = min(idx for idx in keyword_indices if idx != -1)
+                    address = address_lines[0][start_index:]
+                else:
+                    dot_index = first_line.rfind('·')
+                    if dot_index != -1:
+                        address = first_line[dot_index+1:].strip()
+                    else:
+                        address = first_line
         
         places.append({
             'name': name,
