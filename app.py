@@ -545,7 +545,10 @@ def main():
             if not places:
                 st.error("No valid data found. Please check your input.")
                 return
-            html_output = create_html(places, f"Top 10 {place_type} in {area}")
+            
+            # Update this line to include area and place_type
+            html_output = create_html(places, f"Top 10 {place_type} in {area}", area, place_type)
+            
             # Create and display poster image
             poster_image = create_poster_image(place_type, area)
             st.image(poster_image, caption="Poster", use_column_width=True)
@@ -555,11 +558,6 @@ def main():
             st.markdown("### Top 10 Places")
             st.info("The image above shows the top 10 places.")
             
-            
-            # # Create scatter plot
-            # scatter_html = create_scatter_plot_html(places[:10], f"Top 10 {place_type} in {area}")
-            # scatter_image = html_to_image(scatter_html)
-            # st.image(scatter_image, caption="Scatter Plot", use_column_width=True)
             # Convert HTML to image
             with st.spinner("Generating Top 10 image..."):
                 try:
@@ -572,6 +570,7 @@ def main():
                 except Exception as e:
                     st.error(f"An error occurred while generating the image: {str(e)}")
                     st.info("You can still use the HTML version above.")
+            
             # Display the final poster
             final_poster_image = create_final_poster_image()
             st.image(final_poster_image, caption="Final Poster", use_column_width=True)
@@ -586,7 +585,6 @@ def main():
         
                     zip_file.writestr("poster.png", poster_bytes)
                     zip_file.writestr("top_10.png", html_image)
-                    # zip_file.writestr("scatter_plot.png", scatter_image)
                     
                     # Add the new final poster
                     final_poster_bytes = io.BytesIO()
