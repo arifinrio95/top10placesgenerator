@@ -112,6 +112,10 @@ def create_html(places, title, area, place_type):
     most_reviews = max(top_10, key=lambda x: x['reviews'])['reviews']
     highest_rating = max(top_10, key=lambda x: x['rating'])['rating']
     
+    # Remove spaces from area and place_type for the footer
+    footer_area = area.replace(" ", "")
+    footer_place_type = place_type.replace(" ", "")
+    
     html_template = '''
     <!DOCTYPE html>
     <html lang="en">
@@ -214,7 +218,7 @@ def create_html(places, title, area, place_type):
         <div class="container">
             <h1>{title}</h1>
             <div id="placesList"></div>
-            <div class="footer">@{area}{place_type}Lovers • Data akurat per Juli 2024</div>
+            <div class="footer">@{footer_area}{footer_place_type}Lovers • Data akurat per Juli 2024</div>
         </div>
         <script>
             const places = {places_json};
@@ -261,8 +265,8 @@ def create_html(places, title, area, place_type):
         places_json=json.dumps(top_10),
         most_reviews=most_reviews,
         highest_rating=highest_rating,
-        area=area,
-        place_type=place_type
+        footer_area=footer_area,
+        footer_place_type=footer_place_type
     )
     
 def install_chromium():
