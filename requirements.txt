@@ -1,4 +1,4 @@
 streamlit
 pillow
 playwright
-selenium
+instabot
