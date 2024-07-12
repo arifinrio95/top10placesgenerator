@@ -9,10 +9,6 @@ from playwright.sync_api import sync_playwright
 import math
 import zipfile
 import json
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import time
 import requests
 from instabot import Bot
