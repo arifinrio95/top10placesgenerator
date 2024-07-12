@@ -610,6 +610,9 @@ def main():
     top_n = st.radio("Choose the number of top places:", ("5", "10"))
     top_n = int(top_n)
     text_input = st.text_area("Enter the place data (untuk diparsing dan dibuatkan poster):", height=300)
+
+    username = st.text_input("Instagram Username (fill this if u want to upload to your instagram.)")
+    password = st.text_input("Instagram Password (fill this if u want to upload to your instagram.)", type="password")
     if st.button("Generate Images"):
         if area and place_type and text_input:
             places = parse_text(text_input)
@@ -675,12 +678,9 @@ def main():
                     file_name=f"top_{top_n}_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
-            st.header("Upload to Instagram")
-        
-            username = st.text_input("Instagram Username")
-            password = st.text_input("Instagram Password", type="password")
             
-            if st.button("Post to Instagram!"):
+            if username and password and text_input:
+                st.header("Upload to Instagram")
                 image_paths = ["poster.png", f"top_{top_n}.png", "final_poster.png"]
                 success = upload_to_instagram(username, password, image_paths)
                 if success:
