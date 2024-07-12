@@ -615,8 +615,8 @@ def main():
             places = parse_text(text_input)
             
             # Log data yang diproses
-            st.write("Processed data:")
-            st.write(places)
+            # st.write("Processed data:")
+            # st.write(places)
             
             if not places:
                 st.error("No valid data found. Please check your input.")
