@@ -9,6 +9,62 @@ from playwright.sync_api import sync_playwright
 import math
 import zipfile
 import json
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+import os
+
+def upload_to_instagram(username, password, image_paths):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
+    
+    try:
+        # Login
+        driver.get("https://www.instagram.com/accounts/login/")
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "username")))
+        driver.find_element(By.NAME, "username").send_keys(username)
+        driver.find_element(By.NAME, "password").send_keys(password)
+        driver.find_element(By.XPATH, "//button[@type='submit']").click()
+        
+        # Wait for login to complete
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Not Now')]")))
+        driver.find_element(By.XPATH, "//button[contains(text(), 'Not Now')]").click()
+        
+        for image_path in image_paths:
+            # Navigate to upload page
+            driver.get("https://www.instagram.com/create/select/")
+            
+            # Upload image
+            file_input = driver.find_element(By.XPATH, "//input[@type='file']")
+            file_input.send_keys(image_path)
+            
+            # Wait for upload to complete and click Next
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Next')]")))
+            driver.find_element(By.XPATH, "//button[contains(text(), 'Next')]").click()
+            
+            # Skip filters and click Next
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Next')]")))
+            driver.find_element(By.XPATH, "//button[contains(text(), 'Next')]").click()
+            
+            # Add caption and share
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Write a caption...']")))
+            caption_field = driver.find_element(By.XPATH, "//textarea[@aria-label='Write a caption...']")
+            caption_field.send_keys(f"Automatically uploaded image: {os.path.basename(image_path)}")
+            driver.find_element(By.XPATH, "//button[contains(text(), 'Share')]").click()
+            
+            # Wait for upload to complete
+            time.sleep(5)
+        
+        return True
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        return False
+    finally:
+        driver.quit()
+
 def create_scatter_plot_html(places, title):
     if not places:
         return "<p>No data available for scatter plot</p>"
@@ -619,7 +675,18 @@ def main():
                     file_name=f"top_{top_n}_{place_type}_{area}_images.zip",
                     mime="application/zip"
                 )
-            
-            
+            st.header("Upload to Instagram")
+        
+        username = st.text_input("Instagram Username")
+        password = st.text_input("Instagram Password", type="password")
+        
+        if st.button("Post to Instagram!"):
+            image_paths = ["poster.png", f"top_{top_n}.png", "final_poster.png"]
+            success = upload_to_instagram(username, password, image_paths)
+            if success:
+                st.success("Images uploaded to Instagram successfully!")
+            else:
+                st.error("Failed to upload images to Instagram.")
+
 if __name__ == "__main__":
     main()
