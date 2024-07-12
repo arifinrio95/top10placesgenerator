@@ -677,16 +677,16 @@ def main():
                 )
             st.header("Upload to Instagram")
         
-        username = st.text_input("Instagram Username")
-        password = st.text_input("Instagram Password", type="password")
-        
-        if st.button("Post to Instagram!"):
-            image_paths = ["poster.png", f"top_{top_n}.png", "final_poster.png"]
-            success = upload_to_instagram(username, password, image_paths)
-            if success:
-                st.success("Images uploaded to Instagram successfully!")
-            else:
-                st.error("Failed to upload images to Instagram.")
+            username = st.text_input("Instagram Username")
+            password = st.text_input("Instagram Password", type="password")
+            
+            if st.button("Post to Instagram!"):
+                image_paths = ["poster.png", f"top_{top_n}.png", "final_poster.png"]
+                success = upload_to_instagram(username, password, image_paths)
+                if success:
+                    st.success("Images uploaded to Instagram successfully!")
+                else:
+                    st.error("Failed to upload images to Instagram.")
 
 if __name__ == "__main__":
     main()
