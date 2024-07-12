@@ -14,56 +14,28 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import requests
+from instabot import Bot
 import os
+import tempfile
 
 def upload_to_instagram(username, password, image_paths):
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
-    
-    try:
-        # Login
-        driver.get("https://www.instagram.com/accounts/login/")
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "username")))
-        driver.find_element(By.NAME, "username").send_keys(username)
-        driver.find_element(By.NAME, "password").send_keys(password)
-        driver.find_element(By.XPATH, "//button[@type='submit']").click()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        bot = Bot()
+        bot.login(username=username, password=password)
         
-        # Wait for login to complete
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Not Now')]")))
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Not Now')]").click()
+        for i, image_path in enumerate(image_paths):
+            # Simpan gambar ke direktori sementara
+            temp_image_path = os.path.join(tmp_dir, f"image_{i}.png")
+            with open(temp_image_path, "wb") as f:
+                f.write(requests.get(image_path).content)
+            
+            # Unggah gambar
+            caption = f"Automatically uploaded image {i+1}"
+            bot.upload_photo(temp_image_path, caption=caption)
         
-        for image_path in image_paths:
-            # Navigate to upload page
-            driver.get("https://www.instagram.com/create/select/")
-            
-            # Upload image
-            file_input = driver.find_element(By.XPATH, "//input[@type='file']")
-            file_input.send_keys(image_path)
-            
-            # Wait for upload to complete and click Next
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Next')]")))
-            driver.find_element(By.XPATH, "//button[contains(text(), 'Next')]").click()
-            
-            # Skip filters and click Next
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Next')]")))
-            driver.find_element(By.XPATH, "//button[contains(text(), 'Next')]").click()
-            
-            # Add caption and share
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//textarea[@aria-label='Write a caption...']")))
-            caption_field = driver.find_element(By.XPATH, "//textarea[@aria-label='Write a caption...']")
-            caption_field.send_keys(f"Automatically uploaded image: {os.path.basename(image_path)}")
-            driver.find_element(By.XPATH, "//button[contains(text(), 'Share')]").click()
-            
-            # Wait for upload to complete
-            time.sleep(5)
-        
-        return True
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-        return False
-    finally:
-        driver.quit()
+        bot.logout()
+
 
 def create_scatter_plot_html(places, title):
     if not places:
@@ -682,11 +654,11 @@ def main():
             if username and password and text_input:
                 st.header("Upload to Instagram")
                 image_paths = ["poster.png", f"top_{top_n}.png", "final_poster.png"]
-                success = upload_to_instagram(username, password, image_paths)
-                if success:
+                try:
+                    upload_to_instagram(username, password, image_paths)
                     st.success("Images uploaded to Instagram successfully!")
-                else:
-                    st.error("Failed to upload images to Instagram.")
-
+                except Exception as e:
+                    st.error(f"Failed to upload images to Instagram. Error: {str(e)}")
+                    
 if __name__ == "__main__":
     main()
